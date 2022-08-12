@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<manifest>
+
+ <!-- Samsung MSM8916 Common Repos -->
+  <project path="device/samsung/msm8916-common" name="retiredtab/android_device_samsung_msm8916-common"  remote="github" revision="lineage-19.1"/>
+  <project path="device/samsung/qcom-common" name="LineageOS/android_device_samsung_qcom-common" remote="github" revision="lineage-19.1"/>
+
+ <!-- Samsung Hardware Repo -->
+  <project path="hardware/samsung" name="LineageOS/android_hardware_samsung" remote="github" revision="lineage-19.1"/>
+
+ <!-- Common Samsung MSM8916 Kernel -->
+  <project path="kernel/samsung/msm8916" name="retiredtab/android_kernel_samsung_msm8916" remote="github" revision="fresh-allinone-binder-12.0"/>
+
+ <!-- Vendor Trees (for Samsung Tab A/E devices) -->
+  <project path="vendor/samsung/msm8916-common" name="retiredtab/vendor_samsung_msm8916-common"  remote="github" revision="lineage-19.1"/>
+  <project path="vendor/samsung/gte-common" name="retiredtab/android_vendor_samsung_gte-common"  remote="github" revision="Q10.0"/>
+  <project path="vendor/samsung/gtelwifiue" name="retiredtab/vendor_samsung_gtelwifiue"  remote="github" revision="lineage-19.1"/>
+  <project path="vendor/samsung/gt58wifi" name="retiredtab/android_vendor_samsung_gt58wifi"  remote="github" revision="lineage-19.1"/>
+  <project path="vendor/samsung/gt5note10wifi" name="retiredtab/vendor-samsung-gt5note10wifi"  remote="github" revision="lineage-19.1"/>
+  <project path="vendor/samsung/gt510wifi" name="retiredtab/android_vendor_samsung_gt510wifi"  remote="github" revision="lineage-19.1"/>
+  <project path="vendor/samsung/gt58ltebmc" name="retiredtab/android_vendor_samsung_gt58ltebmc"  remote="github" revision="lineage-19.1"/>
+
+ <!-- 19.1 Hacks/Dependencies -->
+ <!-- revert lineage: RIP legacy qcom -->
+ <!-- https://github.com/LineageOS/android/commit/ef008299cbdc7e0c42faeb666515c8b09ece19f2 -->
+  <project path="hardware/qcom-caf/msm8916/audio" name="LineageOS/android_hardware_qcom_audio" remote="github" revision="lineage-19.0-caf-msm8916" />
+  <project path="hardware/qcom-caf/msm8916/display" name="LineageOS/android_hardware_qcom_display" remote="github" revision="lineage-19.0-caf-msm8916" />
+  <project path="hardware/qcom-caf/msm8916/media" name="LineageOS/android_hardware_qcom_media" remote="github" revision="lineage-19.0-caf-msm8916" />
+
+  <project path="external/connectivity" name="LineageOS/android_external_connectivity" remote="github" revision="lineage-18.1" />  
+
+  <!-- Try to bring up sepolicies, but can't do it -->
+  <project path="device/qcom/sepolicy-legacy" name="LineageOS-UL/android_device_qcom_sepolicy" revision="lineage-19.1-legacy" />
+
+  <!-- add guards for CAF repositories -->
+  <!-- https://review.lineageos.org/c/LineageOS/android/+/332006 -->
+  <linkfile src="os_pickup.mk" dest="hardware/qcom-caf/msm8916/Android.mk" />
+
+  <project path="system/tools/dtbtool" name="LineageOS/android_system_tools_dtbtool" remote="github" revision="lineage-18.1" />
+  <project path="hardware/sony/timekeep" name="LineageOS/android_hardware_sony_timekeep" remote="github" revision="lineage-18.1" />
+  <project path="external/sony/boringssl-compat" name="LineageOS/android_external_sony_boringssl-compat" remote="github" revision="lineage-18.1"/>
+
+ <!-- arm-eabi-7.2 -->
+  <project path="prebuilts/gcc/linux-x86/arm/arm-eabi-7.2" name="Galaxy-MSM8916/android-prebuilts-gcc-linux-x86-arm-arm-eabi-7.2" remote="github" revision="master"/>
+
+ <!-- Galaxy Tab A/E device trees -->
+  <project path="device/samsung/gte-common" name="retiredtab/device_samsung_gte-common" groups="device" remote="github" revision="lineage-19.1"/>
+  <project path="device/samsung/gtelwifiue" name="retiredtab/android_device_samsung_gtelwifiue"  remote="github" revision="lineage-19.1"/>
+  <project path="device/samsung/gt58wifi" name="retiredtab/device_samsung_gt58wifi" groups="device" remote="github" revision="lineage-19.1"/>
+  <project path="device/samsung/gt58ltebmc" name="retiredtab/android_device_samsung_gt58ltebmc" groups="device" remote="github" revision="lineage-19.1"/>
+  <project path="device/samsung/gt5note10wifi" name="retiredtab/android_device_samsung_gt5note10wifi"  remote="github" revision="lineage-19.1"/>
+  <project path="device/samsung/gt510wifi" name="retiredtab/android_device_samsung_gt510wifi"  remote="github" revision="lineage-19.1"/>
+
+</manifest>
