@@ -1,0 +1,87 @@
+Okay, here are the instructions for building the 19.1.  This uses gts210wifi as an example.  This assumes
+you know how to build an existing rom already.
+
+#cd into your 19.1 code directory
+cd 19.1
+
+# setup environment
+. build/envsetup.sh
+
+# stash patches that we did last month to frameworks/av and frameworks/base
+# we need to git stash these two directories 
+cd frameworks/av
+git stash --include-untracked
+cd ../base
+git stash --include-untracked
+cd ../..
+
+# sync everything
+repo sync --force-sync
+
+# setup breakfast
+breakfast gts210wifi
+
+# reapply ultra legacy patches after every full repo sync
+repopick -P art -f 318097
+repopick -P external/perfetto -f 287706
+repopick -f 321934
+repopick -f 326385
+repopick -P system/bpf -f 320591
+repopick -P system/netd -f 320592
+
+# for samsung_slsi libfimg4x: Fix a -Wunreachable-code-loop-increment compilation error
+repopick -f 331661
+# for system/core Camera: Add feature extensions
+repopick -f 318817
+# for vendor/lineage  soong: Update camera_in_mediaserver_defaults
+repopick -f 320546
+
+# Unzip patch files audio-camera-hal-patches-for-191.zip
+# I put them into ~/Downloads/frameworksav and ~/Downloads/frameworksbase
+
+# add back audio hal 2.0 and camera hal 1.0
+cd frameworks/av
+# apply patches
+patch -p1 < ~/Downloads/frameworksav/'0001Camera: Restore camera HALv1 support.patch'
+patch -p1 < ~/Downloads/frameworksav/'0002Camera: CameraHardwareInterface changes to support Extended FD.patch'
+patch -p1 < ~/Downloads/frameworksav/'0003Camera: Miscellaneous fixes in QDataCallback and binder death scenarios.patch'
+# modified 0004 to remove qti_camera_device_defaults - this is only for exynos5433
+patch -p1 < ~/Downloads/frameworksav/'0004-5433camera: Only link and use vendor.qti.hardware.camera.device if specified.patch'
+patch -p1 < ~/Downloads/frameworksav/'0005nuplayer: Avoid crash when codec fails to load.patch'
+patch -p1 < ~/Downloads/frameworksav/"0006camera: Don't segfault if we get a NULL parameter.patch"
+patch -p1 < ~/Downloads/frameworksav/'0007libstagefright: Support YVU420SemiPlanar camera format.patch'
+patch -p1 < ~/Downloads/frameworksav/"0008stagefright: omx: Don't signal dataspace change on legacy QCOM.patch"
+patch -p1 < ~/Downloads/frameworksav/'0009stagefright: ACodec: Resolve empty vendor parameters usage.patch'
+patch -p1 < ~/Downloads/frameworksav/'0010libstagefright: Free buffers on observer died.patch'
+patch -p1 < ~/Downloads/frameworksav/'0011libstagefright: use 64-bit usage for native_window_set_usage.patch'
+patch -p1 < ~/Downloads/frameworksav/"0012camera: include: Don't override possible overlayed header.patch"
+# modified 0013 to remove qti_camera_device_defaults - this is only for exynos5433
+patch -p1 < ~/Downloads/frameworksav/'0013-5433camera-media: Support legacy HALv1 camera in mediaserver.patch'
+patch -p1 < ~/Downloads/frameworksav/'0014Camera: check metadata type before releasing frame.patch'
+patch -p1 < ~/Downloads/frameworksav/'0015libstagefright: Fix memory leak due to lock timeout.patch'
+patch -p1 < ~/Downloads/frameworksav/'0016camera: Allow devices to load custom CameraParameter code.patch'
+patch -p1 < ~/Downloads/frameworksav/'0017Camera: Add support for preview frame fd.patch'
+patch -p1 < ~/Downloads/frameworksav/'0018stagefright: add changes related to high-framerates in CameraSource.patch'
+patch -p1 < ~/Downloads/frameworksav/"0019libcameraservice: Don't pass NULL args on setCallbacks call.patch"
+patch -p1 < ~/Downloads/frameworksav/'0020Revert "Remove support for audio HAL V2 from the framework.patch'
+patch -p1 < ~/Downloads/frameworksav/'0021Camera: Add extensions to CameraClient.patch'
+patch -p1 < ~/Downloads/frameworksav/'0022libstagefright: Free buffers on observer died.patch'
+
+# go back top
+cd ../..
+
+# add back audio hal 2.0 and camera hal 1.0
+cd frameworks/base
+# apply patches
+patch -p1 < ~/Downloads/frameworksbase/'0001Camera: Restore camera HALv1 support.patch'
+patch -p1 < ~/Downloads/frameworksbase/'0002Camera: Add feature extensions.patch'
+patch -p1 < ~/Downloads/frameworksbase/'0003Add support for app signature spoofing.patch'
+patch -p1 < ~/Downloads/frameworksbase/'0004Hack: Ignore SensorPrivacyService Security Exception.patch'
+patch -p1 < ~/Downloads/frameworksbase/'0005CameraServiceProxy: Loosen UID check conditionally.patch'
+
+# go back top
+cd ../..
+
+# Let's build it
+brunch gts210wifi
+
