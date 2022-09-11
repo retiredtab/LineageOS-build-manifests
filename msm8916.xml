@@ -37,7 +37,7 @@
   <linkfile src="os_pickup.mk" dest="hardware/qcom-caf/msm8916/Android.mk" />
 
   <project path="system/tools/dtbtool" name="LineageOS/android_system_tools_dtbtool" remote="github" revision="lineage-18.1" />
-  <project path="hardware/sony/timekeep" name="LineageOS/android_hardware_sony_timekeep" remote="github" revision="lineage-18.1" />
+  <project path="hardware/sony/timekeep" name="LineageOS-UL/android_hardware_sony_timekeep" remote="github" revision="lineage-19.1" />
   <project path="external/sony/boringssl-compat" name="LineageOS/android_external_sony_boringssl-compat" remote="github" revision="lineage-18.1"/>
 
  <!-- arm-eabi-7.2 -->
