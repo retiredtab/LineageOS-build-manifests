@@ -38,12 +38,13 @@ repopick -f 320546
 # I put them into ~/Downloads/frameworksav and ~/Downloads/frameworksbase
 
 # add back audio hal 2.0 and camera hal 1.0
+# change directory into frameworks/av
 cd frameworks/av
 # apply patches
 patch -p1 < ~/Downloads/frameworksav/'0001Camera: Restore camera HALv1 support.patch'
 patch -p1 < ~/Downloads/frameworksav/'0002Camera: CameraHardwareInterface changes to support Extended FD.patch'
 patch -p1 < ~/Downloads/frameworksav/'0003Camera: Miscellaneous fixes in QDataCallback and binder death scenarios.patch'
-patch -p1 < ~/Downloads/frameworksav/'0004camera: Only link and use vendor.qti.hardware.camera.device if specified.patch'
+patch -p1 < ~/Downloads/frameworksav/'0004-5433camera: Only link and use vendor.qti.hardware.camera.device if specified.patch'
 patch -p1 < ~/Downloads/frameworksav/'0005nuplayer: Avoid crash when codec fails to load.patch'
 patch -p1 < ~/Downloads/frameworksav/"0006camera: Don't segfault if we get a NULL parameter.patch"
 patch -p1 < ~/Downloads/frameworksav/'0007libstagefright: Support YVU420SemiPlanar camera format.patch'
@@ -52,7 +53,7 @@ patch -p1 < ~/Downloads/frameworksav/'0009stagefright: ACodec: Resolve empty ven
 patch -p1 < ~/Downloads/frameworksav/'0010libstagefright: Free buffers on observer died.patch'
 patch -p1 < ~/Downloads/frameworksav/'0011libstagefright: use 64-bit usage for native_window_set_usage.patch'
 patch -p1 < ~/Downloads/frameworksav/"0012camera: include: Don't override possible overlayed header.patch"
-patch -p1 < ~/Downloads/frameworksav/'0013camera-media: Support legacy HALv1 camera in mediaserver.patch'
+patch -p1 < ~/Downloads/frameworksav/'0013-5433camera-media: Support legacy HALv1 camera in mediaserver.patch'
 patch -p1 < ~/Downloads/frameworksav/'0014Camera: check metadata type before releasing frame.patch'
 patch -p1 < ~/Downloads/frameworksav/'0015libstagefright: Fix memory leak due to lock timeout.patch'
 patch -p1 < ~/Downloads/frameworksav/'0016camera: Allow devices to load custom CameraParameter code.patch'
@@ -67,6 +68,7 @@ patch -p1 < ~/Downloads/frameworksav/'0022libstagefright: Free buffers on observ
 cd ../..
 
 # add back audio hal 2.0 and camera hal 1.0
+# change directory into frameworks/base
 cd frameworks/base
 # apply patches
 patch -p1 < ~/Downloads/frameworksbase/'0001Camera: Restore camera HALv1 support.patch'
