@@ -15,6 +15,11 @@ cd ../base
 git stash --include-untracked
 cd ../..
 
+# stash changes from missing library in camera
+cd hardware/lineage/interfaces/
+git stash --include-untracked
+cd ../../..
+
 # sync everything
 repo sync --force-sync
 
@@ -35,6 +40,10 @@ repopick -f 331661
 repopick -f 318817
 # for vendor/lineage  soong: Update camera_in_mediaserver_defaults
 repopick -f 320546
+# for missing library in camera
+cd hardware/lineage/interfaces/
+patch -p1 < ~/Downloads/"use of undeclared identifier 'F_DUPFD_CLOEXEC'.patch"
+cd ../../..
 
 # Unzip patch files audio-camera-hal-patches-for-191.zip
 # I put them into ~/Downloads/frameworksav and ~/Downloads/frameworksbase
