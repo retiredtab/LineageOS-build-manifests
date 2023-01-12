@@ -1,0 +1,45 @@
+Follow this guide and the following sections/instructions
+
+https://wiki.lineageos.org/devices/chagallwifi/build
+
+Introduction
+Install the platform-tools
+Install the build packages
+Create the directories
+Install the repo command
+Put the ~/bin directory in your path of execution
+Configure git
+Turn on caching to speed up build
+
+Initialize the LineageOS source repository
+For this section
+[code]
+cd ~/android/lineage
+repo init -u https://github.com/LineageOS/android.git -b lineage-18.1
+mkdir .repo/local_manifests
+# copy my manifest into the newly created directory
+cp 18-gts210vewifi.xml .repo/local_manifests
+[/code]
+
+Download the source code
+After the code is downloaded, do this patch
+[code]
+cd packages/modules/NetworkStack
+patch -p1 < 'TcpSocketTracker: Opt-out for TCP info parsing on legacy.patch'
+cd ../../..
+[/code]
+
+Prepare the device-specific code
+For this section
+[code]
+source build/envsetup.sh
+breakfast gts210vewifi
+[/code]
+
+Skip section Extract proprietary blobs
+
+Start the build
+For this section
+[code]
+brunch gts210vewifi
+[/code]

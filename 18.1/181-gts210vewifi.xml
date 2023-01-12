@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<manifest>
+
+<!-- Samsung Device Trees -->
+  <project name="retiredtab/android_device_samsung_gts210vewifi" path="device/samsung/gts210vewifi" remote="github" revision="lineage-18.1" />
+  <project name="retiredtab/android_device_samsung_msm8976-common" path="device/samsung/msm8976-common" remote="github" revision="lineage-18.1" />
+
+<!-- Samsung MSM8976 Kernel -->
+  <project name="syphyr/android_kernel_samsung_msm8976" path="kernel/samsung/msm8976" remote="github" revision="lineage-16.0" />
+
+<!-- Vendor Trees (for all devices) -->
+  <project name="retiredtab/proprietary_vendor_samsung_msm8976" path="vendor/samsung" remote="github" revision="lineage-18.1" />
+
+<!-- Samsung Hardware Repo -->
+  <project path="hardware/samsung" name="LineageOS/android_hardware_samsung" remote="github" revision="lineage-18.1"/>
+
+<!-- Dependencies -->
+  <project path="external/sony/boringssl-compat" name="LineageOS/android_external_sony_boringssl-compat" remote="github" revision="lineage-18.1"/>
+  <project name="LineageOS/android_hardware_sony_timekeep" path="hardware/sony/timekeep" remote="github" revision="lineage-18.1" />
+
+</manifest>
