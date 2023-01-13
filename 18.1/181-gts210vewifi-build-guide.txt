@@ -27,6 +27,9 @@ After the code is downloaded, do this patch
 cd packages/modules/NetworkStack
 patch -p1 < 'TcpSocketTracker: Opt-out for TCP info parsing on legacy.patch'
 cd ../../..
+cd kernel/samsung/msm8976
+patch -p1 < disable-wireguard.diff
+cd ../../..
 [/code]
 
 Prepare the device-specific code
