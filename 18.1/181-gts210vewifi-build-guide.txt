@@ -15,7 +15,7 @@ Initialize the LineageOS source repository
 For this section
 [code]
 cd ~/android/lineage
-repo init -u https://github.com/LineageOS/android.git -b lineage-18.1
+repo init -u https://github.com/LineageOS/android.git -b lineage-18.1 --git-lfs
 mkdir .repo/local_manifests
 # copy my manifest into the newly created directory
 cp 18-gts210vewifi.xml .repo/local_manifests
