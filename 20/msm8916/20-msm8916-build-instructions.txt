@@ -1,4 +1,32 @@
-We are using LineageOS-UL for the repos.  See instructions on how to initialize
+1. We are using LineageOS-UL for the repos.  See instructions on how to initialize
 and get started at
 
-https://github.com/LineageOS-UL/android
+repo init -u https://github.com/LineageOS-UL/android.git -b lineage-20.0 --git-lfs
+
+2. Download the msm8916-20.xml manifest file.  Put this file into
+the .repo/local_manifests directory
+
+3. repo sync
+repo sync -c -j$(nproc --all) --force-sync --no-clone-bundle --no-tags
+
+4.
+
+# For msm8916
+# https://github.com/LineageOS/android_vendor_lineage/commit/8f67d055b36d992f2f09aa6f733aa06ee3d5b917
+# hardware/qcom-caf/msm8916/display/libhwcomposer/../common.mk: error: "hwcomposer.msm8916 (SHARED_LIBRARIES android-arm) missing libbfqio (SHARED_LIBRARIES android-arm)"
+
+# git revert Remove libbfqio
+cd vendor/lineage
+git revert 8f67d055b36d992f2f09aa6f733aa06ee3d5b917
+cd ../..
+
+5. apply the hardware-qcom-wlan-Android-mk.diff patch
+
+[code]
+cd hardware/qcom/wlan
+patch -p1 < ~/Downloads/hardware-qcom-wlan-Android-mk.diff
+[/code]
+
+6. breakfast gt5note10wifi
+
+7. brunch gt5note10wifi
