@@ -27,6 +27,7 @@ cd ../..
 [code]
 cd hardware/qcom/wlan
 patch -p1 < ~/Downloads/hardware-qcom-wlan-Android-mk.diff
+cd ../../..
 [/code]
 
 6. breakfast gt5note10wifi
