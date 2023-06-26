@@ -1,6 +1,8 @@
 1. We are using LineageOS-UL for the repos.  See instructions on how to initialize
 and get started at
 
+https://github.com/LineageOS-UL/android
+
 repo init -u https://github.com/LineageOS-UL/android.git -b lineage-20.0 --git-lfs
 
 2. Download the msm8916-20.xml manifest file.  Put this file into
