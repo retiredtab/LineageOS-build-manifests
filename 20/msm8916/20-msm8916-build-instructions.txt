@@ -31,10 +31,11 @@ cd ../../..
 [/code]
 
 6. apply driver_cmd_nl80211.diff patch to fix compiler error
+[code]
 cd hardware/qcom/wlan
 patch -p1 < ~/Downloads/driver_cmd_nl80211.diff
 cd ../../..
-
+[/code]
 
 7. breakfast gt5note10wifi
 
