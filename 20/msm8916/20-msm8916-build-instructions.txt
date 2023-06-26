@@ -30,6 +30,12 @@ patch -p1 < ~/Downloads/hardware-qcom-wlan-Android-mk.diff
 cd ../../..
 [/code]
 
-6. breakfast gt5note10wifi
+6. apply driver_cmd_nl80211.diff patch to fix compiler error
+cd hardware/qcom/wlan
+patch -p1 < ~/Downloads/driver_cmd_nl80211.diff
+cd ../../..
 
-7. brunch gt5note10wifi
+
+7. breakfast gt5note10wifi
+
+8. brunch gt5note10wifi
