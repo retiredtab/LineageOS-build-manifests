@@ -1,0 +1,4 @@
+We are using LineageOS-UL for the repos.  See instructions on how to initialize
+and get started at
+
+https://github.com/LineageOS-UL/android
