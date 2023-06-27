@@ -37,6 +37,15 @@ patch -p1 < ~/Downloads/driver_cmd_nl80211.diff
 cd ../../..
 [/code]
 
-7. breakfast gt5note10wifi
+7. code names
+SM-P550 = gt5note10wifi
+SM-T550 = gt510wifi
+SM-T350 = gt58wifi
+SM-T357 = gt58ltebmc
+SM-T560NU = gtelwifiue
+
+breakfast code name
+
+example, breakfast gt5note10wifi
 
 8. brunch gt5note10wifi
