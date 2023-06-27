@@ -48,4 +48,6 @@ breakfast code name
 
 example, breakfast gt5note10wifi
 
-8. brunch gt5note10wifi
+8. brunch code name
+
+example, brunch gt5note10wifi
