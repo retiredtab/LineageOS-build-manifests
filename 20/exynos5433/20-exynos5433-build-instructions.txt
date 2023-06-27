@@ -1,0 +1,34 @@
+1. We are using LineageOS-UL for the repos.  See instructions on how to initialize
+and get started at
+
+https://github.com/LineageOS-UL/android
+
+repo init -u https://github.com/LineageOS-UL/android.git -b lineage-20.0 --git-lfs
+
+2. Download the exynos5433-20.xml manifest file.  Put this file into
+the .repo/local_manifests directory
+
+3. repo sync
+repo sync -c -j$(nproc --all) --force-sync --no-clone-bundle --no-tags
+
+4.
+# for samsung_slsi libfimg4x: Fix a -Wunreachable-code-loop-increment compilation error
+repopick -f 331661
+
+5.
+# Patch to fix OS crash to MPPthread.
+cd hardware/samsung_slsi/exynos
+patch -p1 < ~/remove-MPPThread.patch
+cd ../../..
+
+6. code names
+SM-T810 = gts210wifi
+SM-T710 = gts28wifi
+
+breakfast code name
+
+example, breakfast gts210wifi
+
+7. brunch code name
+
+example, brunch gts210wifi
