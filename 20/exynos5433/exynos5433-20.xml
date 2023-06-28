@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<manifest>
+
+  <!-- DEVICES -->
+  <project name="retiredtab/android_device_samsung_gts2-common-selinux" path="device/samsung/gts2-common" remote="github" revision="lineage-20.0" />
+  <project name="retiredtab/android_device_samsung_gts28wifi" path="device/samsung/gts28wifi" remote="github" revision="lineage-20" />
+  <project name="retiredtab/android_device_samsung_gts210wifi" path="device/samsung/gts210wifi" remote="github" revision="lineage-20" />
+  <project name="LineageOS/android_device_samsung_slsi_sepolicy" path="device/samsung_slsi/sepolicy" remote="github" revision="lineage-20" />
+
+  <!-- KERNEL -->
+  <project name="retiredtab/android_kernel_samsung_universal5433-selinux" path="kernel/samsung/universal5433" remote="github" revision="lineage-20-8916-binder" />
+
+  <!-- VENDOR -->
+  <project name="retiredtab/proprietary_vendor_samsung-selinux" path="vendor/samsung" remote="github" revision="lineage-20.0" />
+
+ <!-- Samsung Hardware Repo -->
+  <project path="hardware/samsung" name="LineageOS/android_hardware_samsung" remote="github" revision="lineage-20"/>
+
+  <!-- HARDWARE -->
+  <project name="LineageOS/android_hardware_samsung_slsi_exynos" path="hardware/samsung_slsi/exynos" remote="github" revision="lineage-19.1" />
+  <project name="LineageOS/android_hardware_samsung_slsi_exynos5" path="hardware/samsung_slsi/exynos5" remote="github" revision="lineage-19.1" />
+  <project name="LineageOS/android_hardware_samsung_slsi_openmax" path="hardware/samsung_slsi/openmax" remote="github" revision="lineage-19.1" />
+  <project name="retiredtab/android_hardware_samsung_slsi_exynos5433" path="hardware/samsung_slsi/exynos5433" remote="github" revision="lineage-20.0" />
+
+</manifest>
