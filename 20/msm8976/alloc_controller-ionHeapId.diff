@@ -1,0 +1,18 @@
+# Newpipe video doesn't work if we don't comment this out. 
+
+
+diff --git a/libgralloc/alloc_controller.cpp b/libgralloc/alloc_controller.cpp
+index 082558c4e..eb214fbc4 100755
+--- a/libgralloc/alloc_controller.cpp
++++ b/libgralloc/alloc_controller.cpp
+@@ -448,8 +448,10 @@ int IonController::allocate(alloc_data& data, int usage)
+         ionHeapId |= ION_HEAP(ION_SYSTEM_HEAP_ID);
+     }
+ 
++/* comment out ionHeapId = 0x100000 - ION_IOC_ALLOC failed with error - No such device
+     if(usage & GRALLOC_USAGE_PRIVATE_CAMERA_HEAP)
+         ionHeapId |= ION_HEAP(ION_CAMERA_HEAP_ID);
++*/
+ 
+     if(usage & GRALLOC_USAGE_PRIVATE_ADSP_HEAP)
+         ionHeapId |= ION_HEAP(ION_ADSP_HEAP_ID);

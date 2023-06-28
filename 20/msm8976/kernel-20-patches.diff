@@ -1,0 +1,98 @@
+# kernel patches for LineageOS 20
+
+
+diff --git a/Makefile b/Makefile
+index cfcff52d01a..1eadcc6419a 100644
+--- a/Makefile
++++ b/Makefile
+@@ -117,9 +117,10 @@ ifneq ($(KBUILD_OUTPUT),)
+ # Invoke a second make in the output directory, passing relevant variables
+ # check that the output directory actually exists
+ saved-output := $(KBUILD_OUTPUT)
+-KBUILD_OUTPUT := $(shell cd $(KBUILD_OUTPUT) && /bin/pwd)
++KBUILD_OUTPUT := $(shell mkdir -p $(KBUILD_OUTPUT) && cd $(KBUILD_OUTPUT) \
++								&& /bin/pwd)
+ $(if $(KBUILD_OUTPUT),, \
+-     $(error output directory "$(saved-output)" does not exist))
++     $(error failed to create output directory "$(saved-output)"))
+ 
+ PHONY += $(MAKECMDGOALS) sub-make
+ 
+diff --git a/arch/arm64/configs/gts210vewifi_defconfig b/arch/arm64/configs/gts210vewifi_defconfig
+index 004168adf59..4ca72c515a2 100644
+--- a/arch/arm64/configs/gts210vewifi_defconfig
++++ b/arch/arm64/configs/gts210vewifi_defconfig
+@@ -10,7 +10,7 @@ CONFIG_CPUSETS=y
+ CONFIG_CGROUP_CPUACCT=y
+ CONFIG_RESOURCE_COUNTERS=y
+ CONFIG_CGROUP_SCHED=y
+-CONFIG_RT_GROUP_SCHED=y
++# CONFIG_RT_GROUP_SCHED=y
+ CONFIG_SCHED_HMP=y
+ CONFIG_SCHED_TASK_BEHAVIOR=y
+ CONFIG_NAMESPACES=y
+diff --git a/net/Kconfig b/net/Kconfig
+index d84c2bcf69c..f55f0816295 100644
+--- a/net/Kconfig
++++ b/net/Kconfig
+@@ -75,7 +75,7 @@ config INET
+ 	  Short answer: say Y.
+ 
+ if INET
+-source "net/wireguard/src/Kconfig"
++# source "net/wireguard/src/Kconfig"
+ source "net/ipv4/Kconfig"
+ source "net/ipv6/Kconfig"
+ source "net/netlabel/Kconfig"
+diff --git a/net/Makefile b/net/Makefile
+index 14bd7a3fd85..fc89ead707e 100644
+--- a/net/Makefile
++++ b/net/Makefile
+@@ -16,7 +16,7 @@ obj-$(CONFIG_NET)		+= $(tmp-y)
+ obj-$(CONFIG_LLC)		+= llc/
+ obj-$(CONFIG_NET)		+= ethernet/ 802/ sched/ netlink/
+ obj-$(CONFIG_NETFILTER)		+= netfilter/
+-obj-$(CONFIG_WIREGUARD)		+= wireguard/src/
++# obj-$(CONFIG_WIREGUARD)		+= wireguard/src/
+ obj-$(CONFIG_INET)		+= ipv4/
+ obj-$(CONFIG_XFRM)		+= xfrm/
+ obj-$(CONFIG_UNIX)		+= unix/
+diff --git a/scripts/Makefile.host b/scripts/Makefile.host
+index 1ac414fd503..8c3dc7b2ad3 100644
+--- a/scripts/Makefile.host
++++ b/scripts/Makefile.host
+@@ -112,7 +112,7 @@ hostcxx_flags  = -Wp,-MD,$(depfile) $(__hostcxx_flags)
+ # Create executable from a single .c file
+ # host-csingle -> Executable
+ quiet_cmd_host-csingle 	= HOSTCC  $@
+-      cmd_host-csingle	= $(HOSTCC) $(hostc_flags) -o $@ $< \
++      cmd_host-csingle	= $(HOSTCC) $(hostc_flags) $(HOSTLDFLAGS) -o $@ $< \
+ 	  	$(HOST_LOADLIBES) $(HOSTLOADLIBES_$(@F))
+ $(host-csingle): $(obj)/%: $(src)/%.c FORCE
+ 	$(call if_changed_dep,host-csingle)
+diff --git a/scripts/dtc/dtc-lexer.l b/scripts/dtc/dtc-lexer.l
+index 3b41bfca636..9b9c29e6f31 100644
+--- a/scripts/dtc/dtc-lexer.l
++++ b/scripts/dtc/dtc-lexer.l
+@@ -39,7 +39,7 @@ LINECOMMENT	"//".*\n
+ #include "srcpos.h"
+ #include "dtc-parser.tab.h"
+ 
+-YYLTYPE yylloc;
++extern YYLTYPE yylloc;
+ 
+ /* CAUTION: this will stop working if we ever use yyless() or yyunput() */
+ #define	YY_USER_ACTION \
+diff --git a/scripts/dtc/dtc-lexer.lex.c_shipped b/scripts/dtc/dtc-lexer.lex.c_shipped
+index 2d30f41778b..d0eb405cb81 100644
+--- a/scripts/dtc/dtc-lexer.lex.c_shipped
++++ b/scripts/dtc/dtc-lexer.lex.c_shipped
+@@ -637,7 +637,7 @@ char *yytext;
+ #include "srcpos.h"
+ #include "dtc-parser.tab.h"
+ 
+-YYLTYPE yylloc;
++extern YYLTYPE yylloc;
+ 
+ /* CAUTION: this will stop working if we ever use yyless() or yyunput() */
+ #define	YY_USER_ACTION \
