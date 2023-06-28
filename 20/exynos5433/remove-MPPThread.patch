@@ -1,0 +1,59 @@
+# This patch is needed otherwise LineageOS will start and then crash. 
+# There's no adb logcat while this happens and I needed to use the
+# loggy.sh script to get output.
+
+https://github.com/universal5433/android_device_samsung_trelte-common/commits/lineage-18.1/rootdir/etc/loggy.sh
+
+# Debug line 05 pc shows /system/lib/libhwcutils.so (ExynosMPP::ExynosMPP(ExynosDisplay*, int)+198)
+# I then put in a bunch of print statements in that procedure and then looked at the log again to
+# see where the last print statement ended and then commented out that one line of code.
+
+# Removing mBufferFreeThread->run("MPPThread"); let the OS boot.
+
+10-04 22:24:31.598  3428  3428 F DEBUG  : *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** ***
+10-04 22:24:31.598  3428  3428 F DEBUG  : LineageOS Version: '20.0-20221004-UNOFFICIAL-gts28wifi'
+10-04 22:24:31.598  3428  3428 F DEBUG  : Build fingerprint: 'samsung/gts28wifixx/gts28wifi:7.0/NRD90M/T710XXU2DRB1:user/release-keys'
+10-04 22:24:31.598  3428  3428 F DEBUG  : Revision: '0'
+10-04 22:24:31.599  3428  3428 F DEBUG  : ABI: 'arm'
+10-04 22:24:31.599  3428  3428 F DEBUG  : Timestamp: 2022-10-04 22:24:31.518884292+0000
+10-04 22:24:31.599  3428  3428 F DEBUG  : Process uptime: 0s
+10-04 22:24:31.599  3428  3428 F DEBUG  : Cmdline: /vendor/bin/hw/android.hardware.graphics.composer@2.1-service
+10-04 22:24:31.599  3428  3428 F DEBUG  : pid: 3416, tid: 3416, name: android.hardwar  >>> /vendor/bin/hw/android.hardware.graphics.composer@2.1-service <<<
+10-04 22:24:31.599  3428  3428 F DEBUG  : uid: 1000
+10-04 22:24:31.599  3428  3428 F DEBUG  : signal 6 (SIGABRT), code -1 (SI_QUEUE), fault addr --------
+10-04 22:24:31.599  3428  3428 F DEBUG  : Abort message: 'incStrongRequireStrong() called on 0xb07e00d0 which isn't already owned'
+10-04 22:24:31.599  3428  3428 F DEBUG  :    r0  00000000  r1  00000d58  r2  00000006  r3  be80f378
+10-04 22:24:31.599  3428  3428 F DEBUG  :    r4  be80f388  r5  be80f370  r6  00000d58  r7  0000016b
+10-04 22:24:31.599  3428  3428 F DEBUG  :    r8  00000000  r9  ffffffff  r10 be80f378  r11 00000000
+10-04 22:24:31.599  3428  3428 F DEBUG  :    ip  00000d58  sp  be80f358  lr  aff4a2df  pc  aff4a2f2
+10-04 22:24:31.599  3428  3428 F DEBUG  : backtrace:
+10-04 22:24:31.599  3428  3428 F DEBUG  :      #00 pc 000632f2  /apex/com.android.runtime/lib/bionic/libc.so (abort+138) (BuildId: 218350d77d2f433386336a6e3980457c)
+10-04 22:24:31.600  3428  3428 F DEBUG  :      #01 pc 000048ab  /system/lib/liblog.so (__android_log_default_aborter+6) (BuildId: d4a0810279a526930d86afeb640f5d3c)
+10-04 22:24:31.600  3428  3428 F DEBUG  :      #02 pc 00004fab  /system/lib/liblog.so (__android_log_assert+158) (BuildId: d4a0810279a526930d86afeb640f5d3c)
+10-04 22:24:31.600  3428  3428 F DEBUG  :      #03 pc 0000abe7  /system/lib/libutils.so (android::RefBase::incStrongRequireStrong(void const*) const+58) (BuildId: c79ffd463e951ca6f962fde1247e7c30)
+10-04 22:24:31.600  3428  3428 F DEBUG  :      #04 pc 0000d571  /system/lib/libutils.so (android::thread::run(char const*, int, unsigned int)+88) (BuildId: c79ffd463e951ca6f962fde1247e7c30)
+10-04 22:24:31.600  3428  3428 F DEBUG  :      #05 pc 00004977  /system/lib/libhwcutils.so (ExynosMPP::ExynosMPP(ExynosDisplay*, int)+198) (BuildId: 19cdefa7ab0fcb465a747a835b6d83d3)
+10-04 22:24:31.600  3428  3428 F DEBUG  :      #06 pc 00006b2f  /system/lib/libhwcutils.so (ExynosMPPModule::ExynosMPPModule(ExynosDisplay*, int)+2) (BuildId: 19cdefa7ab0fcb465a747a835b6d83d3)
+10-04 22:24:31.600  3428  3428 F DEBUG  :      #07 pc 00004635  /system/lib/libexynosdisplay.so (ExynosOverlayDisplay::ExynosOverlayDisplay(int, exynos5_hwc_composer_device_1_t*)+160) (BuildId: ba98c3d87554162e16a9f15176ad2171)
+10-04 22:24:31.600  3428  3428 F DEBUG  :      #08 pc 0000742b  /system/lib/libexynosdisplay.so (ExynosPrimaryDisplay::ExynosPrimaryDisplay(int, exynos5_hwc_composer_device_1_t*)+2) (BuildId: ba98c3d87554162e16a9f15176ad2171)
+10-04 22:24:31.600  3428  3428 F DEBUG  :      #09 pc 00003ef5  /system/lib/hw/hwcomposer.exynos5.so (exynos5_open(hw_module_t const*, char const*, hw_device_t**)+68) (BuildId: 87682bf1fa7318a1f8eb5e2842d68349)
+10-04 22:24:31.600  3428  3428 F DEBUG  :      #10 pc 000052e1  /system/vendor/bin/hw/android.hardware.graphics.composer@2.1-service (android::hardware::graphics::composer::V2_1::passthrough::HwcLoader::openDeviceWithAdapter(hw_module_t const*, bool*)+236) (BuildId: b371c492e72f8f1ee67baa01316f1663)
+10-04 22:24:31.600  3428  3428 F DEBUG  :      #11 pc 00005147  /system/vendor/bin/hw/android.hardware.graphics.composer@2.1-service (android::hardware::graphics::composer::V2_1::passthrough::HwcLoader::createHalWithAdapter(hw_module_t const*)+30) (BuildId: b371c492e72f8f1ee67baa01316f1663)
+10-04 22:24:31.598    0    0 I [c6] logd: logdr: UID=1000 GID=1003 PID=3428 n tail=0 logMask=8 pid=3416 start=0ns deadline=0ns
+10-04 22:24:31.598    0    0 I [c6] logd: logdr: UID=1000 GID=1003 PID=3428 n tail=0 logMask=1 pid=3416 start=0ns deadline=0ns
+10-04 22:24:31.601  3428  3428 F DEBUG  :      #12 pc 000050a9  /system/vendor/bin/hw/android.hardware.graphics.composer@2.1-service (android::hardware::graphics::composer::V2_1::passthrough::HwcLoader::load()+84) (BuildId: b371c492e72f8f1ee67baa01316f1663)
+10-04 22:24:31.601  3428  3428 F DEBUG  :      #13 pc 00004f8f  /system/vendor/bin/hw/android.hardware.graphics.composer@2.1-service (main+154) (BuildId: b371c492e72f8f1ee67baa01316f1663)
+10-04 22:24:31.601  3428  3428 F DEBUG  :      #14 pc 0005c6fd  /apex/com.android.runtime/lib/bionic/libc.so (__libc_init+56) (BuildId: 218350d77d2f433386336a6e3980457c)
+
+diff --git a/libhwcutils/ExynosMPP.cpp b/libhwcutils/ExynosMPP.cpp
+index 7335ab7..c82b354 100644
+--- a/libhwcutils/ExynosMPP.cpp
++++ b/libhwcutils/ExynosMPP.cpp
+@@ -54,7 +54,6 @@ ExynosMPP::ExynosMPP(ExynosDisplay *display, int gscIndex)
+     mDoubleOperation = false;
+     mBufferFreeThread = new BufferFreeThread(this);
+     mBufferFreeThread->mRunning = true;
+-    mBufferFreeThread->run("MPPThread");
+ }
+ 
+ ExynosMPP::~ExynosMPP()
