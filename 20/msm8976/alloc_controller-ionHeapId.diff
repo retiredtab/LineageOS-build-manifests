@@ -1,4 +1,14 @@
 # Newpipe video doesn't work if we don't comment this out. 
+# 01-12 17:38:59.035  8662  8790 W .schabi.newpipe: buffer descriptor with invalid usage bits 0x2000000
+# 01-12 17:38:59.035  440  468 E qdmemalloc: ION_IOC_ALLOC failed with error - No such device
+# 01-12 17:38:59.035  440  468 E qdmemalloc: allocate: Failed to allocate buffer - heap: 0x100000 flags: 0x0
+# 01-12 17:38:59.035  440  468 E qdgralloc: gralloc failed err=No such device
+# 01-12 17:38:59.035  8662  8790 E GraphicBufferAllocator: Failed to allocate (640 x 272) layerCount 1 format 2141391876 usage 42400900: 5
+# 01-12 17:38:59.035  8662  8790 E BufferQueueProducer: [SurfaceView[org.schabi.newpipe/org.schabi.newpipe.MainActivity]#1(BLAST Consumer)1](id:21d600000001,api:3,p:8662,c:8662) dequeueBuffer: createGraphicBuffer failed
+# 01-12 17:38:59.035  8662  8790 E BufferQueueProducer: [SurfaceView[org.schabi.newpipe/org.schabi.newpipe.MainActivity]#1(BLAST Consumer)1](id:21d600000001,api:3,p:8662,c:8662) requestBuffer: slot 0 is not owned by the producer (state = FREE)
+# 01-12 17:38:59.035  8662  8790 E Surface : dequeueBuffer: IGraphicBufferProducer::requestBuffer failed: -22
+# 01-12 17:38:59.035  8662  8790 E BufferQueueProducer: [SurfaceView[org.schabi.newpipe/org.schabi.newpipe.MainActivity]#1(BLAST Consumer)1](id:21d600000001,api:3,p:8662,c:8662) cancelBuffer: slot 0 is not owned by the producer (state = FREE)
+# 01-12 17:38:59.035  8662  8790 E ACodec  : dequeueBuffer failed: BAD_VALUE(-22).
 
 
 diff --git a/libgralloc/alloc_controller.cpp b/libgralloc/alloc_controller.cpp
