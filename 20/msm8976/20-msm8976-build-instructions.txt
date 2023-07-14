@@ -8,12 +8,25 @@ repo init -u https://github.com/LineageOS-UL/android.git -b lineage-20.0 --git-l
 2. Download the msm8976-20.xml manifest file.  Put this file into
 the .repo/local_manifests directory
 
-3. repo sync
+3. Git stash our changes and then reapply later on after full repo sync
+
+# cd into your 20 code directory
+cd hardware/qcom-caf/msm8952/display
+git stash --include-untracked
+cd ../../../..
+cd hardware/qcom-caf/wlan
+git stash --include-untracked
+cd ../../..
+cd kernel/samsung/msm8976
+git stash --include-untracked
+cd ../../..
+
+4. repo sync everything
 repo sync -c -j$(nproc --all) --force-sync --no-clone-bundle --no-tags
 
-4.
+5.
 
-# For msm8976
+# For msm8976 compiler error message
 # https://github.com/LineageOS/android_vendor_lineage/commit/8f67d055b36d992f2f09aa6f733aa06ee3d5b917
 # hardware/qcom-caf/msm8952/display/libhwcomposer/../common.mk: error: "hwcomposer.msm8952 (SHARED_LIBRARIES android-arm) missing libbfqio (SHARED_LIBRARIES android-arm)"
 
@@ -22,31 +35,32 @@ cd vendor/lineage
 git revert 8f67d055b36d992f2f09aa6f733aa06ee3d5b917
 cd ../..
 
-5. # Patch to make newpipe show video
+6. # Patch to make newpipe show video
 
 cd hardware/qcom-caf/msm8952/display
 patch -p1 < ~/Downloads/alloc_controller-ionHeapId.diff
 cd ../../../..
 
-6. # Patch to fix wifi compiler error
+7. # Patch to fix wifi compiler error
 
 cd hardware/qcom-caf/wlan
 patch -p1 < ~/Downloads/driver_cmd_nl80211_patch.diff
 cd ../../..
 
-7. # Multiple patches for kernel to make it work with LineageOS 20
+8. # Multiple patches for kernel to make it work with LineageOS 20
 
 cd kernel/samsung/msm8976
 patch -p1 < ~/Downloads/kernel-20-patches.diff
 cd ../../..
 
-8. code names
+9. code names
 SM-T813 = gts210vewifi
+SM-T713 = gts28vewifi
 
 breakfast code name
 
 example, breakfast gts210vewifi
 
-8. brunch code name
+10. brunch code name
 
 example, brunch gts210vewifi
