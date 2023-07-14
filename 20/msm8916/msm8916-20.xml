@@ -42,6 +42,6 @@
   <project path="device/samsung/gtelwifiue" name="retiredtab/android_device_samsung_gtelwifiue"  remote="github" revision="lineage-20"/>
   <project path="device/samsung/gt5note10wifi" name="retiredtab/android_device_samsung_gt5note10wifi"  remote="github" revision="lineage-20.0"/>
   <project path="device/samsung/gt58ltebmc" name="retiredtab/android_device_samsung_gt58ltebmc" groups="device" remote="github" revision="lineage-19.1"/>
-  <project path="device/samsung/gt510wifi" name="retiredtab/android_device_samsung_gt510wifi"  remote="github" revision="lineage-19.1"/>
+  <project path="device/samsung/gt510wifi" name="retiredtab/android_device_samsung_gt510wifi"  remote="github" revision="lineage-20.0"/>
 
 </manifest>
