@@ -8,10 +8,16 @@ repo init -u https://github.com/LineageOS-UL/android.git -b lineage-20.0 --git-l
 2. Download the msm8916-20.xml manifest file.  Put this file into
 the .repo/local_manifests directory
 
-3. repo sync
+3. For monthly security patches, we need to stash our changes and then reapply them.
+
+cd hardware/qcom-caf/wlan
+git stash --include-untracked
+cd ../../..
+
+4. repo sync
 repo sync -c -j$(nproc --all) --force-sync --no-clone-bundle --no-tags
 
-4.
+5.
 
 # For msm8916
 # https://github.com/LineageOS/android_vendor_lineage/commit/8f67d055b36d992f2f09aa6f733aa06ee3d5b917
@@ -22,22 +28,22 @@ cd vendor/lineage
 git revert 8f67d055b36d992f2f09aa6f733aa06ee3d5b917
 cd ../..
 
-5. apply the hardware-qcom-wlan-Android-mk.diff patch
+6. apply the hardware-qcom-wlan-Android-mk.diff patch
 
 [code]
-cd hardware/qcom-cafe/wlan
+cd hardware/qcom-caf/wlan
 patch -p1 < ~/Downloads/hardware-qcom-wlan-Android-mk.diff
 cd ../../..
 [/code]
 
-6. apply driver_cmd_nl80211.diff patch to fix compiler error
+7. apply driver_cmd_nl80211.diff patch to fix compiler error
 [code]
 cd hardware/qcom-caf/wlan
 patch -p1 < ~/Downloads/driver_cmd_nl80211.diff
 cd ../../..
 [/code]
 
-7. code names
+8. code names
 SM-P550 = gt5note10wifi
 SM-T550 = gt510wifi
 SM-T350 = gt58wifi
@@ -48,6 +54,6 @@ breakfast code name
 
 example, breakfast gt5note10wifi
 
-8. brunch code name
+9. brunch code name
 
 example, brunch gt5note10wifi
