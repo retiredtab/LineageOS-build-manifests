@@ -36,7 +36,9 @@ patch -p1 < ~/Downloads/hardware-qcom-wlan-Android-mk.diff
 cd ../../..
 [/code]
 
-7. apply driver_cmd_nl80211.diff patch to fix compiler error
+7. Step 7 is not needed as of Oct 6, 2023 security patches.  I'm leaving it in here for documentation/history purposes
+
+apply driver_cmd_nl80211.diff patch to fix compiler error
 [code]
 cd hardware/qcom-caf/wlan
 patch -p1 < ~/Downloads/driver_cmd_nl80211.diff
