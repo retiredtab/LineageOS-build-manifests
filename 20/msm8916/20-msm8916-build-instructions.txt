@@ -31,9 +31,12 @@ cd ../..
 6. apply the hardware-qcom-wlan-Android-mk.diff patch
 
 [code]
-cd hardware/qcom-caf/wlan
-patch -p1 < ~/Downloads/hardware-qcom-wlan-Android-mk.diff
-cd ../../..
+# Copy the Android.mk from 19.1 where it worked into 20
+# taken from
+# https://raw.githubusercontent.com/LineageOS/android_hardware_qcom_wlan/lineage-19.1-caf/wcnss-service/Android.mk
+cd hardware/qcom-caf/wlan/wcnss-service
+cp ~/Downloads/19-wcnss-service-Android.mk Android.mk
+cd ../../../..
 [/code]
 
 7. Step 7 is not needed as of Oct 6, 2023 security patches.  I'm leaving it in here for documentation/history purposes
