@@ -50,7 +50,7 @@ cd ../../..
 8. # Multiple patches for kernel to make it work with LineageOS 20
 
 cd kernel/samsung/msm8976
-patch -p1 < ~/Downloads/kernel-20-patches.diff
+patch -p1 < ~/Downloads/zram-msm8976-kernel-mar-17.diff
 cd ../../..
 
 9. code names
