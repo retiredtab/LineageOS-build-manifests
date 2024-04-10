@@ -1,0 +1,32 @@
+From 6cc9ff5b0250bd7f27e3959f4431146a8b67c03b Mon Sep 17 00:00:00 2001
+From: html6405 <peter.schelchshorn@mhs-solutions.at>
+Date: Tue, 28 Dec 2021 15:05:35 +0100
+Subject: [PATCH] Location.java: Adding 1024 weeks for chips with GPSRollover
+ issue
+
+Change-Id: I3efbc97230352a9aede06f482dea78b742ddfb9a
+---
+ location/java/android/location/Location.java | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
+
+
+diff --git a/location/java/android/location/Location.java b/location/java/android/location/Location.java
+index 033056cb2..09781dd94 100644
+--- a/location/java/android/location/Location.java
++++ b/location/java/android/location/Location.java
+@@ -262,7 +262,14 @@ public class Location implements Parcelable {
+      * @return the Unix epoch time of this location
+      */
+     public @IntRange(from = 0) long getTime() {
+-        return mTimeMs;
++        long gpsTime = mTimeMs;
++
++        // Adding 1024 weeks for chips with GPS Week Number Rollover issue
++        // 1024 * 7 * 24 * 60 * 60 * 1000 = 619315200000L
++        if ((gpsTime > 0) && (gpsTime < 1546300800000L))
++            gpsTime += 619315200000L;
++
++        return gpsTime;
+     }
+ 
+     /**
