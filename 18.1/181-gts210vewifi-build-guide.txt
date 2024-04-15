@@ -28,7 +28,7 @@ cd packages/modules/NetworkStack
 patch -p1 < 'TcpSocketTracker: Opt-out for TCP info parsing on legacy.patch'
 cd ../../..
 cd kernel/samsung/msm8976
-patch -p1 < 8976-kernel-zram-mar-11.diff
+patch -p1 < msm8976-kernel-april-15.diff
 cd ../../..
 [/code]
 
