@@ -1,0 +1,58 @@
+diff --git a/arch/arm64/configs/gts210vewifi_defconfig b/arch/arm64/configs/gts210vewifi_defconfig
+index 004168ad..d85125ae 100644
+--- a/arch/arm64/configs/gts210vewifi_defconfig
++++ b/arch/arm64/configs/gts210vewifi_defconfig
+@@ -543,7 +543,10 @@ CONFIG_ANDROID_LOW_MEMORY_KILLER=y
+ CONFIG_ANDROID_INTF_ALARM_DEV=y
+ CONFIG_ION=y
+ CONFIG_ION_MSM=y
+-CONFIG_VNSWAP=y
++# CONFIG_VNSWAP=y
++CONFIG_SWAP=y
++CONFIG_ZRAM=y
++CONFIG_ZRAM_LZ4_COMPRESS=y
+ CONFIG_SPS=y
+ CONFIG_USB_BAM=y
+ CONFIG_SPS_SUPPORT_NDP_BAM=y
+diff --git a/arch/arm64/configs/gts28vewifi_defconfig b/arch/arm64/configs/gts28vewifi_defconfig
+index 0449f45e..12549e86 100644
+--- a/arch/arm64/configs/gts28vewifi_defconfig
++++ b/arch/arm64/configs/gts28vewifi_defconfig
+@@ -543,7 +543,10 @@ CONFIG_ANDROID_LOW_MEMORY_KILLER=y
+ CONFIG_ANDROID_INTF_ALARM_DEV=y
+ CONFIG_ION=y
+ CONFIG_ION_MSM=y
+-CONFIG_VNSWAP=y
++# CONFIG_VNSWAP=y
++CONFIG_SWAP=y
++CONFIG_ZRAM=y
++CONFIG_ZRAM_LZ4_COMPRESS=y
+ CONFIG_SPS=y
+ CONFIG_USB_BAM=y
+ CONFIG_SPS_SUPPORT_NDP_BAM=y
+diff --git a/net/Kconfig b/net/Kconfig
+index d84c2bcf..f55f0816 100644
+--- a/net/Kconfig
++++ b/net/Kconfig
+@@ -75,7 +75,7 @@ config INET
+ 	  Short answer: say Y.
+ 
+ if INET
+-source "net/wireguard/src/Kconfig"
++# source "net/wireguard/src/Kconfig"
+ source "net/ipv4/Kconfig"
+ source "net/ipv6/Kconfig"
+ source "net/netlabel/Kconfig"
+diff --git a/net/Makefile b/net/Makefile
+index 14bd7a3f..fc89ead7 100644
+--- a/net/Makefile
++++ b/net/Makefile
+@@ -16,7 +16,7 @@ obj-$(CONFIG_NET)		+= $(tmp-y)
+ obj-$(CONFIG_LLC)		+= llc/
+ obj-$(CONFIG_NET)		+= ethernet/ 802/ sched/ netlink/
+ obj-$(CONFIG_NETFILTER)		+= netfilter/
+-obj-$(CONFIG_WIREGUARD)		+= wireguard/src/
++# obj-$(CONFIG_WIREGUARD)		+= wireguard/src/
+ obj-$(CONFIG_INET)		+= ipv4/
+ obj-$(CONFIG_XFRM)		+= xfrm/
+ obj-$(CONFIG_UNIX)		+= unix/
