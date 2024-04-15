@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<manifest>
+
+  <!-- Device tree -->
+  <project name="retiredtab/android_device_samsung_matissewifi" path="device/samsung/matissewifi" remote="github" revision="20" />
+  <project name="retiredtab/android_device_samsung_matisse-common" path="device/samsung/matisse-common" remote="github" revision="20" />
+  <project name="retiredtab/android_device_samsung_msm8226-common" path="device/samsung/msm8226-common" remote="github" revision="20" />
+
+  <project path="device/samsung/qcom-common" name="LineageOS/android_device_samsung_qcom-common" remote="github" revision="lineage-20"/>
+
+  <!-- Vendor tree -->
+  <project name="S3NEO/android_vendor_samsung_matissewifi" path="vendor/samsung/matissewifi" remote="github" revision="lineage-18.1" />
+  <project name="S3NEO/android_vendor_samsung_matisse-common" path="vendor/samsung/matisse-common" remote="github" revision="lineage-18.1" />
+  <project name="TheMuppets/proprietary_vendor_samsung" path="vendor/samsung" remote="github" revision="lineage-18.1" />
+
+  <!-- Kernel tree -->
+  <project name="retiredtab/android_kernel_samsung_msm8226" path="kernel/samsung/msm8226" remote="github" revision="20" />
+
+  <!-- Extras -->
+  <project path="external/sony/boringssl-compat" name="LineageOS/android_external_sony_boringssl-compat" remote="github" revision="lineage-18.1"/>
+
+  <!-- Hardwre Samsung -->
+  <project name="LineageOS/android_hardware_samsung" path="hardware/samsung" remote="github" revision="lineage-20" />
+
+  <!-- Legacy qcom-caf -->
+  <project path="hardware/qcom-caf/msm8952/audio" name="LineageOS/android_hardware_qcom_audio" remote="github" revision="lineage-18.1-caf-msm8952" />
+  <project path="hardware/qcom-caf/msm8952/display" name="LineageOS/android_hardware_qcom_display" remote="github" revision="lineage-18.1-caf-msm8952" />
+  <project path="hardware/qcom-caf/msm8952/media" name="LineageOS/android_hardware_qcom_media" remote="github" revision="lineage-18.1-caf-msm8952" />
+
+  <!-- add guards for CAF repositories -->
+  <!-- https://review.lineageos.org/c/LineageOS/android/+/332006 -->
+  <linkfile src="os_pickup.mk" dest="hardware/qcom-caf/msm8952/Android.mk" />
+
+</manifest>

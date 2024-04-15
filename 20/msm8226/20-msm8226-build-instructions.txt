@@ -1,0 +1,16 @@
+1. We are using LineageOS-UL for the repos.  See instructions on how to initialize
+and get started at
+
+https://github.com/LineageOS-UL/android
+
+repo init -u https://github.com/LineageOS-UL/android.git -b lineage-20.0 --git-lfs
+
+2. Download the matissewifi.xml manifest file.  Put this file into
+the .repo/local_manifests directory
+
+3. repo sync
+repo sync -c -j$(nproc --all) --force-sync --no-clone-bundle --no-tags
+
+4. breakfast matissewifi
+
+5. brunch matissewifi
