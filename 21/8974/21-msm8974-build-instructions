@@ -1,0 +1,49 @@
+1. We are using LineageOS-UL for the repos.  See instructions on how to initialize
+and get started at
+
+https://github.com/LineageOS-UL/android
+
+repo init -u https://github.com/LineageOS-UL/android.git -b lineage-21.0 --git-lfs --depth=1
+
+2. Download the 320.xml manifest file.  Put this file into
+the .repo/local_manifests directory
+
+3. Git stash our changes and then reapply later on after full repo sync
+
+# cd into your 21 code directory
+cd packages/modules/Bluetooth
+git stash --include-untracked
+cd ../../..
+
+cd hardware/qcom-caf/wlan
+git stash --include-untracked
+cd ../../..
+
+cd frameworks/opt/net/wifi
+git stash --include-untracked
+cd ../../../..
+
+4. repo sync everything
+repo sync -c -j$(nproc --all) --force-sync --no-clone-bundle --no-tags
+
+5. Patch packages/modules/Bluetooth so Bluetooth won't crash
+
+cd packages/modules/Bluetooth
+patch -p1 < ~/Downloads/packages_modules_Bluetooth.diff
+cd ../../..
+
+6. Patch to fix wifi compiler error
+
+cd hardware/qcom-caf/wlan
+patch -p1 < ~/Downloads/hardware_qcom-caf_wlan.diff
+cd ../../..
+
+7. Patch frameworks/opt/net/wifi for wifi compiler erros
+
+cd frameworks/opt/net/wifi
+patch -p1 < ~/Downloads/frameworks_opt_net_wifi.diff
+cd ../../../..
+
+8. breakfast mondrianwifi
+
+9. brunch mondrianwifi
