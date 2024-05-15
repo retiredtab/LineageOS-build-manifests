@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<manifest>
+
+  <!-- DEVICES -->
+  <project name="retiredtab/android_device_samsung_msm8974-common" path="device/samsung/msm8974-common" remote="github" revision="lineage-21.0" />
+  <project name="retiredtab/android_device_samsung_mondrianwifi" path="device/samsung/mondrianwifi" remote="github" revision="lineage-21.0" />
+  <project path="device/samsung/qcom-common" name="LineageOS/android_device_samsung_qcom-common" remote="github" revision="lineage-21"/>
+
+  <!-- KERNEL -->
+  <project name="retiredtab/android_kernel_samsung_msm8974" path="kernel/samsung/msm8974" remote="github" revision="lineage-21.0" />
+
+  <!-- VENDOR -->
+  <project name="retiredtab/proprietary_vendor_samsung_msm8974" path="vendor/samsung" remote="github" revision="lineage-21.0" />
+  <project name="phoval/android_vendor_samsung_mondrianwifi" path="vendor/samsung/mondrianwifi" remote="github" revision="lineage-20" />
+
+  <!-- Samsung Hardware Repo -->
+  <project path="hardware/samsung" name="LineageOS/android_hardware_samsung" remote="github" revision="lineage-21"/>
+
+</manifest>
