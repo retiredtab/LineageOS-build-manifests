@@ -8,7 +8,7 @@
   <project name="LineageOS/android_device_samsung_slsi_sepolicy" path="device/samsung_slsi/sepolicy" remote="github" revision="lineage-20" />
 
   <!-- KERNEL -->
-  <project name="retiredtab/android_kernel_samsung_universal5433-r22" path="kernel/samsung/universal5433" remote="github" revision="20-r22" />
+  <project name="retiredcrave/android_kernel_samsung_universal5433" path="kernel/samsung/universal5433" remote="github" revision="lineage-20" />
 
   <!-- VENDOR -->
   <project name="retiredtab/proprietary_vendor_samsung-selinux" path="vendor/samsung" remote="github" revision="20-r22" />
