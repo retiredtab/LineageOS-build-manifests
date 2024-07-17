@@ -1,0 +1,17 @@
+# project build/make/
+# Comes from
+# https://review.lineageos.org/c/LineageOS/android_build/+/386813
+
+diff --git a/tools/releasetools/build_image.py b/tools/releasetools/build_image.py
+index 92e6f7f..d594fc2 100755
+--- a/tools/releasetools/build_image.py
++++ b/tools/releasetools/build_image.py
+@@ -946,7 +946,7 @@ def CopyInputDirectory(src, dst, filter_file):
+       line = line.strip()
+       if not line:
+         return
+-      if line != os.path.normpath(line):
++      if line != os.path.normpath(line) and line != os.path.normpath(line)+"/":
+         sys.exit(f"{line}: not normalized")
+       if line.startswith("../") or line.startswith('/'):
+         sys.exit(f"{line}: escapes staging directory by starting with ../ or /")

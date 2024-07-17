@@ -1,0 +1,31 @@
+# project system/apex/
+diff --git a/apexd/apexd_loop.cpp b/apexd/apexd_loop.cpp
+index e15a7fa..8efe6f9 100644
+--- a/apexd/apexd_loop.cpp
++++ b/apexd/apexd_loop.cpp
+@@ -544,10 +544,25 @@ Result<LoopbackDeviceUniqueFd> CreateAndConfigureLoopDevice(
+     LOG(WARNING) << qd_status.error();
+   }
+ 
++/*  Comment this out.  It causes T813 NOT to create a loop device and then
++    OS boots into download mode.
++
++    If figured this out by putting in LOG(INFO) statements to see where it would produce
++    an error.  When it can't do the read_ahead_status, it returns with read_ahead_status.error()
++    and the loop device never gets created.  Thus the apexd causes the OS to restart into
++    download mode.
++
++    init: Service apexd-bootstrap has 'reboot_on_failure' option and failed, shutting down system.
++
++    apexd-bootstrap: Failed to activate /system/vendor/apex/com.android.vndk.current.on_vendor.apex(com.android.vndk.v35@1):
++    Could not create loop device for /system/vendor/apex/com.android.vndk.current.on_vendor.apex:
++    Failed to open /sys/block/loop0/queue/read_ahead_kb: Permission denied
++
+   Result<void> read_ahead_status = ConfigureReadAhead(loop_device->name);
+   if (!read_ahead_status.ok()) {
+     return read_ahead_status.error();
+   }
++*/
+ 
+   return loop_device;
+ }

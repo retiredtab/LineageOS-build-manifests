@@ -1,0 +1,13 @@
+diff --git a/snippets/losul.xml b/snippets/losul.xml
+index 8c54a06..8a43881 100644
+--- a/snippets/losul.xml
++++ b/snippets/losul.xml
+@@ -86,7 +86,7 @@
+   <project path="hardware/qcom-caf/msm8994/media" name="LineageOS-UL/android_hardware_qcom_media" groups="qcom,pdk-qcom" revision="lineage-21.0-caf-msm8994" />
+ 
+   <project path="packages/apps/Nfc" name="LineageOS-UL/android_packages_apps_Nfc" remote="losul" />
+-  <project path="packages/modules/adb" name="LineageOS-UL/android_packages_modules_adb" remote="losul" />
++  <project path="packages/modules/adb" name="LineageOS-UL/android_packages_modules_adb" remote="losul" revision="lineage-21.0-qpr1"/>
+   <project path="packages/modules/Bluetooth" name="LineageOS-UL/android_packages_modules_Bluetooth" remote="losul" />
+   <project path="packages/modules/Connectivity" name="LineageOS-UL/android_packages_modules_Connectivity" remote="losul" />
+   <project path="packages/modules/DeviceLock" name="LineageOS-UL/android_packages_modules_DeviceLock" groups="pdk-cw-fs,pdk-fs" remote="losul" />

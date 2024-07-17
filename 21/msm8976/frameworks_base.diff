@@ -1,0 +1,44 @@
+# project frameworks/base/
+# Needed otherwise OS crashes with cgroup errors and won't boot
+# From
+# https://github.com/LineageOS-UL/android_frameworks_base/commit/304444218e9f0abc5b9c3eedf6a4702189de151b
+# https://github.com/LineageOS-UL/android_frameworks_base/commit/0003108fd9096984e05367ca212960010241aca5
+
+diff --git a/core/jni/com_android_internal_os_Zygote.cpp b/core/jni/com_android_internal_os_Zygote.cpp
+index 3ed9f49ed..05cac1941 100644
+--- a/core/jni/com_android_internal_os_Zygote.cpp
++++ b/core/jni/com_android_internal_os_Zygote.cpp
+@@ -1968,10 +1968,13 @@ static void SpecializeCommon(JNIEnv* env, uid_t uid, gid_t gid, jintArray gids,
+     if (getuid() == 0) {
+         const int rc = createProcessGroup(uid, getpid());
+         if (rc != 0) {
++                ALOGE("createProcessGroup(%d, %d) failed: %s", uid, /* pid= */ 0, strerror(-rc));
++    #if 0
+             fail_fn(rc == -EROFS ? CREATE_ERROR("createProcessGroup failed, kernel missing "
+                                                 "CONFIG_CGROUP_CPUACCT?")
+                                  : CREATE_ERROR("createProcessGroup(%d, %d) failed: %s", uid,
+                                                 /* pid= */ 0, strerror(-rc)));
++    #endif
+         }
+     }
+ 
+diff --git a/services/core/java/com/android/server/am/ProcessList.java b/services/core/java/com/android/server/am/ProcessList.java
+index 89c89944e..641b2cc82 100644
+--- a/services/core/java/com/android/server/am/ProcessList.java
++++ b/services/core/java/com/android/server/am/ProcessList.java
+@@ -2513,14 +2513,9 @@ public final class ProcessList {
+                         // If we're not told to skip the process group creation, go create it.
+                         final int res = Process.createProcessGroup(uid, startResult.pid);
+                         if (res < 0) {
+-                            if (res == -OsConstants.ESRCH) {
+                                 Slog.e(ActivityManagerService.TAG,
+                                         "Unable to create process group for "
+                                         + app.processName + " (" + startResult.pid + ")");
+-                            } else {
+-                                throw new AssertionError("Unable to create process group for "
+-                                    + app.processName + " (" + startResult.pid + ")");
+-                            }
+                         } else {
+                             app.mProcessGroupCreated = true;
+                         }
+
