@@ -1,0 +1,101 @@
+These are instructions for people who know how to use Linux CLI.  If you don't know Linux, DO YOUR OWN RESEARCH.
+These instructions are for building LineageOS 21 ONLY, not some other OS variation.  DO YOUR OWN RESEARCH.
+
+You need to setup your build environment by following a guide like
+
+https://wiki.lineageos.org/devices/chagallwifi/build/
+
+You will also need 300GB or more of disk space and 64GB DRAM.  If you have less DRAM, just make your swapfile + your
+physical DRAM => 64GB.  For example, if you have 16GB DRAM, then make a 48GB swapfile.  This can be on a SSD to speed
+things up a bit.
+
+1. We are using LineageOS-UL for the repos.  See instructions on how to initialize
+and get started at
+
+https://github.com/LineageOS-UL/android
+
+repo init -u https://github.com/LineageOS-UL/android.git -b lineage-21.0 --git-lfs
+
+2. Download the msm8976-21.xml manifest file
+
+https://github.com/retiredtab/LineageOS-build-manifests/tree/main/21/msm8976
+
+Put this file into the .repo/local_manifests directory
+
+3. Git stash our changes from last month and then reapply later on after full repo sync
+
+# cd into your 21 code directory and git stash all the patches and repo sync fresh after
+# we will reapply these patches after a fresh repo sync
+# this is needed to make monthly security patches
+
+cd build/make
+git stash --include-untracked
+cd ../..
+cd frameworks/base
+git stash --include-untracked
+cd ../..
+cd hardware/qcom-caf/msm8952/display/
+git stash --include-untracked
+cd ../../../..
+cd hardware/qcom-caf/wlan
+git stash --include-untracked
+cd ../../..
+cd kernel/samsung/msm8976
+git stash --include-untracked
+cd ../../..
+cd system/apex
+git stash --include-untracked
+cd ../..
+cd .repo/manifests
+git stash --include-untracked
+cd ../..
+
+4. repo sync everything
+repo sync -c -j$(nproc --all) --force-sync --no-clone-bundle --no-tags
+
+5. Download the patches from
+
+https://github.com/retiredtab/LineageOS-build-manifests/tree/main/21/msm8976
+
+and put them into the ~/Downloads directory
+
+# apply patches for each monthly security build
+
+cd build/make
+patch -p1 < ~/Downloads/build_make.diff
+cd ../..
+cd frameworks/base
+patch -p1 < ~/Downloads/frameworks_base.diff
+cd ../..
+cd hardware/qcom-caf/msm8952/display/
+patch -p1 < ~/Downloads/hardware_qcom-caf_msm8952_display.diff
+cd ../../../..
+cd hardware/qcom-caf/wlan
+patch -p1 < ~/Downloads/hardware_qcom-caf_wlan.diff
+cd ../../..
+cd kernel/samsung/msm8976
+patch -p1 < ~/Downloads/kernel_samsung_msm8976.diff
+cd ../../..
+cd system/apex
+patch -p1 < ~/Downloads/system_apex.diff
+cd ../..
+cd .repo/manifests
+patch -p1 < ~/Downloads/repo_manifests_snippets.diff
+cd ../..
+
+6. In order for adb to work in the OS, we need to resync back to branch QPR1 where it
+last worked.
+
+repo sync --force-sync packages/modules/adb
+
+7. code names
+SM-T813 = gts210vewifi
+SM-T713 = gts28vewifi
+
+breakfast code name
+
+example, breakfast gts210vewifi
+
+8. brunch code name
+
+example, brunch gts210vewifi
