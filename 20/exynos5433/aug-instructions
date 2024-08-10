@@ -1,0 +1,83 @@
+If you don't want to wait, here are the instructions on how to make Aug 5th security patches and possibly beyond.
+
+These instructions WILL CHANGE month to month.
+
+1. setup build environment
+
+[code=bash]
+. build/envsetup.sh
+[/code]
+
+2. The Aug 5th patches are at
+
+https://review.lineageos.org/q/topic:"T_asb_2024-08"
+
+As you can see, 5 repos were modified. The number of repos changed will vary month to month obviously depending on the security patches.
+
+If we take a look at
+
+https://github.com/orgs/LineageOS-UL/repositories
+
+4 repos (packages/modules/Bluetooth, hardware/interfaces, frameworks/av and frameworks/base) were forked.
+
+Since UL repos have not been updated in a few months now, we will stop using the UL repos and use the original LineageOS repos 
+and apply the UL patches manually via git am command.  Thus, we need to change our .repo/manifests default.xml and snippets/losul.xml
+files to reflect the above.
+
+[code=bash]
+cd .repo/manifests
+# stash any changes from last time and use the new aug 2024 patch file
+git stash
+patch -p1 < ~/Downloads/manifests-aug-2024.patch
+croot
+[/code]
+
+3. repo sync everything and manually pick the Aug 5th patches since they haven't been merged yet.
+
+[code=bash]
+repo sync --force-sync
+repopick -t T_asb_2024-08
+[/code]
+
+4. Now we have to apply the UL patches to these 4 forked repos above.
+
+[code=bash]
+# Reapply UL patches below
+
+cd packages/modules/Bluetooth
+git am ~/Downloads/packages_modules_Bluetooth-july-2024.patch
+croot
+
+cd frameworks/base
+git am ~/Downloads/frameworks-base-june-2024.patch
+croot
+
+cd hardware/interfaces
+git am ~/Downloads/hardware_interfaces_aug-2024.patch
+croot
+
+cd frameworks/av
+git am ~/Downloads/frameworks_av-aug-2024.patch 
+croot
+[/code]
+
+
+5. # for samsung_slsi libfimg4x: Fix a -Wunreachable-code-loop-increment compilation error
+
+[code=bash]
+repopick -f 331661
+[/code]
+
+6. # Verify MPPthread patch exists.
+
+[code=bash]
+cd hardware/samsung_slsi/exynos
+git diff
+# If patch exists, there's no need to do the below
+patch -p1 < ~/Downloads/remove-MPPThread.patch
+# go back to top
+croot
+[/code]
+
+7. Breakfast and Brunch as usual.
+

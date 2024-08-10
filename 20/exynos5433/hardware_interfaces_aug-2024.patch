@@ -1,0 +1,190 @@
+From bf7ca85ef36231bfe1589de8ea20421c9f25a6e0 Mon Sep 17 00:00:00 2001
+From: TARKZiM <tom8476oo@gmail.com>
+Date: Sat, 12 Feb 2022 19:16:35 +0800
+Subject: [PATCH 1/5] audio: Bring back 2.0 hal support
+
+Change-Id: Ib70c271393f2079f9ff60b442ee3ee431b15b3c2
+---
+ audio/common/all-versions/default/service/service.cpp | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/audio/common/all-versions/default/service/service.cpp b/audio/common/all-versions/default/service/service.cpp
+index fbf616563d..d595df5359 100644
+--- a/audio/common/all-versions/default/service/service.cpp
++++ b/audio/common/all-versions/default/service/service.cpp
+@@ -101,6 +101,7 @@ int main(int /* argc */, char* /* argv */ []) {
+             "android.hardware.audio@6.0::IDevicesFactory",
+             "android.hardware.audio@5.0::IDevicesFactory",
+             "android.hardware.audio@4.0::IDevicesFactory",
++            "android.hardware.audio@2.0::IDevicesFactory"
+         },
+         {
+             "Audio Effect API",
+@@ -108,6 +109,7 @@ int main(int /* argc */, char* /* argv */ []) {
+             "android.hardware.audio.effect@6.0::IEffectsFactory",
+             "android.hardware.audio.effect@5.0::IEffectsFactory",
+             "android.hardware.audio.effect@4.0::IEffectsFactory",
++            "android.hardware.audio.effect@2.0::IEffectsFactory",
+         }
+     };
+ 
+
+From 5f8be69294f9591df34f1a420f9ddc52a7fc42b2 Mon Sep 17 00:00:00 2001
+From: TARKZiM <tom8476oo@gmail.com>
+Date: Sat, 27 Aug 2022 21:00:34 +0800
+Subject: [PATCH 3/5] Revert "audio: use binder threadpool"
+
+This reverts commit d90c47420af3aa59c6fc864c30023ec62b0a26ac.
+---
+ audio/common/all-versions/default/service/Android.bp  | 1 -
+ audio/common/all-versions/default/service/service.cpp | 4 ----
+ 2 files changed, 5 deletions(-)
+
+diff --git a/audio/common/all-versions/default/service/Android.bp b/audio/common/all-versions/default/service/Android.bp
+index 9890be2954..1bd6abeb47 100644
+--- a/audio/common/all-versions/default/service/Android.bp
++++ b/audio/common/all-versions/default/service/Android.bp
+@@ -52,7 +52,6 @@ cc_binary {
+     shared_libs: [
+         "libcutils",
+         "libbinder",
+-        "libbinder_ndk",
+         "libhidlbase",
+         "liblog",
+         "libutils",
+diff --git a/audio/common/all-versions/default/service/service.cpp b/audio/common/all-versions/default/service/service.cpp
+index d595df5359..e96ea5f625 100644
+--- a/audio/common/all-versions/default/service/service.cpp
++++ b/audio/common/all-versions/default/service/service.cpp
+@@ -20,7 +20,6 @@
+ #include <string>
+ #include <vector>
+ 
+-#include <android/binder_process.h>
+ #include <binder/ProcessState.h>
+ #include <cutils/properties.h>
+ #include <dlfcn.h>
+@@ -79,9 +78,6 @@ int main(int /* argc */, char* /* argv */ []) {
+     // start a threadpool for vndbinder interactions
+     ::android::ProcessState::self()->startThreadPool();
+ 
+-    ABinderProcess_setThreadPoolMaxThreadCount(1);
+-    ABinderProcess_startThreadPool();
+-
+     const int32_t defaultValue = -1;
+     int32_t value =
+         property_get_int32("persist.vendor.audio.service.hwbinder.size_kbyte", defaultValue);
+
+From 51f11119d7852a165f41a8a8b53ea860dac16aec Mon Sep 17 00:00:00 2001
+From: TARKZiM <tom8476oo@gmail.com>
+Date: Sat, 27 Aug 2022 21:20:42 +0800
+Subject: [PATCH 4/5] Revert "Audio: Load Bluetooth AIDL HAL"
+
+This reverts commit 3f8f5997ada49bcc7be7f5bccfddf024684faef1.
+---
+ .../all-versions/default/service/service.cpp  | 43 -------------------
+ 1 file changed, 43 deletions(-)
+
+diff --git a/audio/common/all-versions/default/service/service.cpp b/audio/common/all-versions/default/service/service.cpp
+index e96ea5f625..0b8a91525a 100644
+--- a/audio/common/all-versions/default/service/service.cpp
++++ b/audio/common/all-versions/default/service/service.cpp
+@@ -22,7 +22,6 @@
+ 
+ #include <binder/ProcessState.h>
+ #include <cutils/properties.h>
+-#include <dlfcn.h>
+ #include <hidl/HidlTransportSupport.h>
+ #include <hidl/LegacySupport.h>
+ #include <hwbinder/ProcessState.h>
+@@ -46,31 +45,6 @@ static bool registerPassthroughServiceImplementations(Iter first, Iter last) {
+     return false;
+ }
+ 
+-static bool registerExternalServiceImplementation(const std::string& libName,
+-                                                  const std::string& funcName) {
+-    constexpr int dlMode = RTLD_LAZY;
+-    void* handle = nullptr;
+-    dlerror();  // clear
+-    auto libPath = libName + ".so";
+-    handle = dlopen(libPath.c_str(), dlMode);
+-    if (handle == nullptr) {
+-        const char* error = dlerror();
+-        ALOGE("Failed to dlopen %s: %s", libPath.c_str(),
+-              error != nullptr ? error : "unknown error");
+-        return false;
+-    }
+-    binder_status_t (*factoryFunction)();
+-    *(void**)(&factoryFunction) = dlsym(handle, funcName.c_str());
+-    if (!factoryFunction) {
+-        const char* error = dlerror();
+-        ALOGE("Factory function %s not found in libName %s: %s", funcName.c_str(), libPath.c_str(),
+-              error != nullptr ? error : "unknown error");
+-        dlclose(handle);
+-        return false;
+-    }
+-    return ((*factoryFunction)() == STATUS_OK);
+-}
+-
+ int main(int /* argc */, char* /* argv */ []) {
+     signal(SIGPIPE, SIG_IGN);
+ 
+@@ -129,13 +103,6 @@ int main(int /* argc */, char* /* argv */ []) {
+             "android.hardware.bluetooth.a2dp@1.0::IBluetoothAudioOffload"
+         }
+     };
+-
+-    const std::vector<std::pair<std::string,std::string>> optionalInterfaceSharedLibs = {
+-        {
+-            "android.hardware.bluetooth.audio-impl",
+-            "createIBluetoothAudioProviderFactory",
+-        },
+-    };
+     // clang-format on
+ 
+     for (const auto& listIter : mandatoryInterfaces) {
+@@ -152,15 +119,5 @@ int main(int /* argc */, char* /* argv */ []) {
+                  "Could not register %s", interfaceFamilyName.c_str());
+     }
+ 
+-    for (const auto& interfacePair : optionalInterfaceSharedLibs) {
+-        const std::string& libraryName = interfacePair.first;
+-        const std::string& interfaceLoaderFuncName = interfacePair.second;
+-        if (registerExternalServiceImplementation(libraryName, interfaceLoaderFuncName)) {
+-            ALOGI("%s() from %s success", interfaceLoaderFuncName.c_str(), libraryName.c_str());
+-        } else {
+-            ALOGW("%s() from %s failed", interfaceLoaderFuncName.c_str(), libraryName.c_str());
+-        }
+-    }
+-
+     joinRpcThreadpool();
+ }
+
+From d36aa2c2a32b344f215577534cc7c58fbd294e5b Mon Sep 17 00:00:00 2001
+From: Pierre-Hugues Husson <phh@phh.me>
+Date: Sun, 19 Dec 2021 17:03:15 -0500
+Subject: [PATCH 5/5] Add a vendor800 command, to be able to call
+ vendor-specific hwc functions
+
+Change-Id: Icbef1e9e3a331ae3bd5a05687d545851d94d88a8
+---
+ .../composer-command-buffer/2.1/ComposerCommandBuffer.h     | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/graphics/composer/2.1/utils/command-buffer/include/composer-command-buffer/2.1/ComposerCommandBuffer.h b/graphics/composer/2.1/utils/command-buffer/include/composer-command-buffer/2.1/ComposerCommandBuffer.h
+index 499d3b96e3..489578468f 100644
+--- a/graphics/composer/2.1/utils/command-buffer/include/composer-command-buffer/2.1/ComposerCommandBuffer.h
++++ b/graphics/composer/2.1/utils/command-buffer/include/composer-command-buffer/2.1/ComposerCommandBuffer.h
+@@ -402,6 +402,12 @@ class CommandWriterBase {
+         endCommand();
+     }
+ 
++    void vendor800_1(uint32_t val) {
++        beginCommand(0x800 << 16, 1);
++        write(val);
++        endCommand();
++    }
++
+    protected:
+      template <typename T>
+      void beginCommand(T command, uint16_t length) {
