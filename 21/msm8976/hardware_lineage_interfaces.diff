@@ -1,0 +1,28 @@
+# project hardware/lineage/interfaces/
+
+diff --git a/camera/device/1.0-legacy/Android.bp b/camera/device/1.0-legacy/Android.bp
+index e31b93e..b6afc55 100644
+--- a/camera/device/1.0-legacy/Android.bp
++++ b/camera/device/1.0-legacy/Android.bp
+@@ -23,6 +23,7 @@ cc_library_shared {
+         "libgralloctypes",
+         "libhardware",
+         "libcamera_metadata",
++        "libui"
+     ],
+     static_libs: [
+         "android.hardware.camera.common@1.0-helper"
+diff --git a/camera/provider/2.4-legacy/CameraProvider.cpp b/camera/provider/2.4-legacy/CameraProvider.cpp
+index 877d826..68ae060 100644
+--- a/camera/provider/2.4-legacy/CameraProvider.cpp
++++ b/camera/provider/2.4-legacy/CameraProvider.cpp
+@@ -324,7 +324,7 @@ bool CameraProvider::setUpVendorTags() {
+     }
+     mVendorTagSections.resize(numSections);
+     for (size_t s = 0; s < numSections; s++) {
+-        mVendorTagSections[s].sectionName = (*sectionNames)[s].string();
++        mVendorTagSections[s].sectionName = (*sectionNames)[s].c_str();
+         mVendorTagSections[s].tags = tagsBySection[s];
+     }
+     return true;
+

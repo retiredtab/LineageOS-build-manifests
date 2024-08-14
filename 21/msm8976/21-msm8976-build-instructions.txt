@@ -14,7 +14,9 @@ and get started at
 
 https://github.com/LineageOS-UL/android
 
+[code=bash]
 repo init -u https://github.com/LineageOS-UL/android.git -b lineage-21.0 --git-lfs
+[/code]
 
 2. Download the msm8976-21.xml manifest file
 
@@ -22,92 +24,119 @@ https://github.com/retiredtab/LineageOS-build-manifests/tree/main/21/msm8976
 
 Put this file into the .repo/local_manifests directory
 
-3. Git stash our changes from last month and then reapply later on after full repo sync
+These instructions WILL CHANGE month to month.
 
-# cd into your 21 code directory and git stash all the patches and repo sync fresh after
-# we will reapply these patches after a fresh repo sync
-# this is needed to make monthly security patches
+3. setup build environment
+
+[code=bash]
+. build/envsetup.sh
+[/code]
+
+4. Git stash our changes from last month and then reapply later on after full repo sync
+
+[code=bash]
+
+# stash all our changes so we get the latest repo update, then reapply patches later on
+# patches made via git am are automatically removed with repo sync --force-sync
 
 cd build/make
 git stash --include-untracked
-cd ../..
-cd frameworks/base
-git stash --include-untracked
-cd ../..
+croot
 cd hardware/qcom-caf/msm8952/display/
 git stash --include-untracked
-cd ../../../..
+croot
 cd hardware/qcom-caf/wlan
 git stash --include-untracked
-cd ../../..
+croot
 cd kernel/samsung/msm8976
 git stash --include-untracked
-cd ../../..
+croot
 cd system/apex
 git stash --include-untracked
-cd ../..
+croot
+cd vendor/lineage
+git stash --include-untracked
+croot
+cd hardware/lineage/interfaces/
+git stash --include-untracked
+croot
+
+# stash any changes from last time and use the new aug 2024 patch file
+
 cd .repo/manifests
 git stash --include-untracked
-cd ../..
+patch -p1 < ~/Downloads/manifests-aug-2024.patch
+croot
+[/code]
 
-4. repo sync everything
+5. repo sync everything
+
+[code=bash]
 repo sync -c -j$(nproc --all) --force-sync --no-clone-bundle --no-tags
+[/code]
 
-5. Download the patches from
+6. Download the patches from
 
 https://github.com/retiredtab/LineageOS-build-manifests/tree/main/21/msm8976
 
 and put them into the ~/Downloads directory
 
-# apply patches for each monthly security build
-
-cd build/make
-patch -p1 < ~/Downloads/build_make.diff
-cd ../..
-cd frameworks/base
-patch -p1 < ~/Downloads/frameworks_base.diff
-cd ../..
-cd hardware/qcom-caf/msm8952/display/
-patch -p1 < ~/Downloads/hardware_qcom-caf_msm8952_display.diff
-cd ../../../..
-cd hardware/qcom-caf/wlan
-patch -p1 < ~/Downloads/hardware_qcom-caf_wlan.diff
-cd ../../..
-cd kernel/samsung/msm8976
-patch -p1 < ~/Downloads/kernel_samsung_msm8976.diff
-cd ../../..
-cd system/apex
-patch -p1 < ~/Downloads/system_apex.diff
-cd ../..
-cd .repo/manifests
-patch -p1 < ~/Downloads/repo_manifests_snippets.diff
-cd ../..
-
-6. In order for adb to work in the OS, we need to resync back to branch QPR1 where it
-last worked.
-
-Thus, we need to modify our manifest so that it looks like this
+Now we have to reapply the UL patches.
 
 [code=bash]
-$ cd .repo/manifests
-# modify the losul.xml file using the diff below
-$ git diff
-diff --git a/snippets/losul.xml b/snippets/losul.xml
-index 8c54a06..8a43881 100644
---- a/snippets/losul.xml
-+++ b/snippets/losul.xml
-@@ -86,7 +86,7 @@
-   <project path="hardware/qcom-caf/msm8994/media" name="LineageOS-UL/android_hardware_qcom_media" groups="qcom,pdk-qcom" revision="lineage-21.0-caf-msm8994" />
+# Reapply UL patches below
 
-   <project path="packages/apps/Nfc" name="LineageOS-UL/android_packages_apps_Nfc" remote="losul" />
--  <project path="packages/modules/adb" name="LineageOS-UL/android_packages_modules_adb" remote="losul" />
-+  <project path="packages/modules/adb" name="LineageOS-UL/android_packages_modules_adb" remote="losul" revision="lineage-21.0-qpr1"/>
-   <project path="packages/modules/Bluetooth" name="LineageOS-UL/android_packages_modules_Bluetooth" remote="losul" />
-   <project path="packages/modules/Connectivity" name="LineageOS-UL/android_packages_modules_Connectivity" remote="losul" />
-   <project path="packages/modules/DeviceLock" name="LineageOS-UL/android_packages_modules_DeviceLock" groups="pdk-cw-fs,pdk-fs" remote="losul" />
+cd packages/modules/Bluetooth
+git am ~/Downloads/packages_modules_Bluetooth-aug-2024.patch
+croot
+
+cd frameworks/base
+git am ~/Downloads/frameworks-base-aug-2024.patch
+croot
+
+cd frameworks/native
+git am ~/Downloads/frameworks-native-aug-2024.patch
+croot
+
+cd hardware/interfaces
+git am ~/Downloads/hardware_interfaces-aug-2024.patch
+croot
+
+cd vendor/lineage
+patch -p1 < ~/Downloads/vendor_lineage.diff
+patch -p1 < ~/Downloads/vendor_lineage_skip_abi_checks.patch
+croot
+
+cd build/make
+git am ~/Downloads/build-aug-2024.patch
+croot
+
+# needed for fix compiler error
+
+cd hardware/lineage/interfaces/
+patch -p1 < ~/Downloads/hardware_lineage_interfaces.diff
+croot
+
+# apply device specific patches for each monthly security build
+
+cd build/make
+patch -p1 < ~/Downloads/msm8976-patches/build_make.diff
+croot
+cd hardware/qcom-caf/msm8952/display/
+patch -p1 < ~/Downloads/msm8976-patches/hardware_qcom-caf_msm8952_display.diff
+croot
+cd hardware/qcom-caf/wlan
+patch -p1 < ~/Downloads/msm8976-patches/hardware_qcom-caf_wlan.diff
+croot
+cd kernel/samsung/msm8976
+patch -p1 < ~/Downloads/msm8976-patches/kernel_samsung_msm8976.diff
+croot
+cd system/apex
+patch -p1 < ~/Downloads/msm8976-patches/system_apex.diff
+croot
+
 [/code]
 
-repo sync --force-sync packages/modules/adb
 
 7. code names
 SM-T813 = gts210vewifi
