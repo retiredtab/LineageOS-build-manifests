@@ -1,0 +1,737 @@
+From 64029f9077588c4090fc592ef2b83e7d32bc5d0a Mon Sep 17 00:00:00 2001
+From: html6405 <peter.schelchshorn@mhs-solutions.at>
+Date: Tue, 16 Nov 2021 17:09:08 +0100
+Subject: [PATCH 01/15] ColorFade: fix EGL crash on exynos4 mali blobs .
+
+Change-Id: I434668a601c7022f6a5a8c23685d5e9fe4d56713
+---
+ .../java/com/android/server/display/ColorFade.java    | 11 ++++++++++-
+ 1 file changed, 10 insertions(+), 1 deletion(-)
+
+diff --git a/services/core/java/com/android/server/display/ColorFade.java b/services/core/java/com/android/server/display/ColorFade.java
+index 93d9b8d30a2e3..2b07e01e1a422 100644
+--- a/services/core/java/com/android/server/display/ColorFade.java
++++ b/services/core/java/com/android/server/display/ColorFade.java
+@@ -31,6 +31,7 @@
+ import android.opengl.EGLSurface;
+ import android.opengl.GLES11Ext;
+ import android.opengl.GLES20;
++import android.os.SystemProperties;
+ import android.util.Slog;
+ import android.view.Display;
+ import android.view.DisplayInfo;
+@@ -84,6 +85,9 @@ final class ColorFade {
+     private static final int EGL_GL_COLORSPACE_DISPLAY_P3_PASSTHROUGH_EXT = 0x3490;
+     private static final int EGL_PROTECTED_CONTENT_EXT = 0x32C0;
+ 
++    private static final boolean DESTROY_SURFACE_AFTER_DETACH =
++            SystemProperties.getBoolean("ro.egl.destroy_after_detach", false);
++
+     private final int mDisplayId;
+ 
+     // Set to true when the animation context has been fully prepared.
+@@ -380,10 +384,15 @@ public void dismissResources() {
+                 destroyScreenshotTexture();
+                 destroyGLShaders();
+                 destroyGLBuffers();
+-                destroyEglSurface();
++                if (!DESTROY_SURFACE_AFTER_DETACH) {
++                    destroyEglSurface();
++                }
+             } finally {
+                 detachEglContext();
+             }
++            if (DESTROY_SURFACE_AFTER_DETACH) {
++                destroyEglSurface();
++            }
+             // This is being called with no active context so shouldn't be
+             // needed but is safer to not change for now.
+             GLES20.glFlush();
+
+From c10b86423ae43eff107dda98cf16625e654973a9 Mon Sep 17 00:00:00 2001
+From: html6405 <peter.schelchshorn@mhs-solutions.at>
+Date: Tue, 28 Dec 2021 15:05:35 +0100
+Subject: [PATCH 02/15] Location.java: Adding 1024 weeks for chips with
+ GPSRollover issue
+
+Change-Id: I3efbc97230352a9aede06f482dea78b742ddfb9a
+---
+ core/java/android/location/Location.java | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
+
+diff --git a/core/java/android/location/Location.java b/core/java/android/location/Location.java
+index fd3e5a22e969e..11c08ac969a6e 100644
+--- a/core/java/android/location/Location.java
++++ b/core/java/android/location/Location.java
+@@ -279,7 +279,14 @@ public void setProvider(@Nullable String provider) {
+      * @return the Unix epoch time of this location
+      */
+     public @IntRange(from = 0) long getTime() {
+-        return mTimeMs;
++        long gpsTime = mTimeMs;
++
++        // Adding 1024 weeks for chips with GPS Week Number Rollover issue
++        // 1024 * 7 * 24 * 60 * 60 * 1000 = 619315200000L
++        if ((gpsTime > 0) && (gpsTime < 1546300800000L))
++            gpsTime += 619315200000L;
++
++        return gpsTime;
+     }
+ 
+     /**
+
+From b44bd029f8198483435b493b15b9a4141c72a629 Mon Sep 17 00:00:00 2001
+From: Yaroslav Zviezda <acroreiser@gmail.com>
+Date: Wed, 12 Jul 2023 23:34:39 +0300
+Subject: [PATCH 03/15] Disable multiprocess WebView for Go devices
+
+This will save some memory.
+
+This reverts commit 2bdf647b7d9412d7622b843234b38b7189702b35.
+---
+ .../core/java/com/android/server/webkit/SystemImpl.java     | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/services/core/java/com/android/server/webkit/SystemImpl.java b/services/core/java/com/android/server/webkit/SystemImpl.java
+index 5d6d07a7f5aab..b1da4bb9c8ff4 100644
+--- a/services/core/java/com/android/server/webkit/SystemImpl.java
++++ b/services/core/java/com/android/server/webkit/SystemImpl.java
+@@ -294,8 +294,10 @@ public void ensureZygoteStarted() {
+ 
+     @Override
+     public boolean isMultiProcessDefaultEnabled() {
+-        // Multiprocess is enabled by default for all devices.
+-        return true;
++        // Multiprocess is enabled for all 64-bit devices, since the ability to run the renderer
++        // process in 32-bit when it's a separate process typically results in a net memory saving.
++        // Multiprocess is also enabled for 32-bit devices unless they report they are "low ram".
++        return Build.SUPPORTED_64_BIT_ABIS.length > 0 || !ActivityManager.isLowRamDeviceStatic();
+     }
+ 
+     @Override
+
+From f735037962eebe7f1fca91bba5aea2c0346fcafe Mon Sep 17 00:00:00 2001
+From: Roman Stratiienko <r.stratiienko@gmail.com>
+Date: Thu, 9 Jun 2022 20:44:54 +0300
+Subject: [PATCH 04/15] Don't use stretch effect by default
+
+Old SOCs simply can't handle it and FPS is dropped down to 10.
+
+I hope someday we will be able to choose it using sysprops or RROs
+
+Signed-off-by: Roman Stratiienko <r.stratiienko@gmail.com>
+Change-Id: Ic91f23d4f57aa2043b5acf8f5bc2f38b827db5ac
+---
+ core/java/android/widget/EdgeEffect.java | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/core/java/android/widget/EdgeEffect.java b/core/java/android/widget/EdgeEffect.java
+index c110ab9560303..0352da3a068f3 100644
+--- a/core/java/android/widget/EdgeEffect.java
++++ b/core/java/android/widget/EdgeEffect.java
+@@ -245,8 +245,10 @@ public EdgeEffect(@NonNull Context context, @Nullable AttributeSet attrs) {
+                 attrs, com.android.internal.R.styleable.EdgeEffect);
+         final int themeColor = a.getColor(
+                 com.android.internal.R.styleable.EdgeEffect_colorEdgeEffect, 0xff666666);
+-        mEdgeEffectType = Compatibility.isChangeEnabled(USE_STRETCH_EDGE_EFFECT_BY_DEFAULT)
+-                ? TYPE_STRETCH : TYPE_GLOW;
++        // mEdgeEffectType = TYPE_GLOW
++        // Glow effect has an issue in settings app:
++        // After edge effect the buttons don't work until content scrolled, therefore use NONE
++        mEdgeEffectType = TYPE_NONE;
+         a.recycle();
+ 
+         mPaint.setAntiAlias(true);
+
+From 01c07c5594a1a4bdd4aa53db440c6821a7ac63be Mon Sep 17 00:00:00 2001
+From: Roman Stratiienko <r.stratiienko@gmail.com>
+Date: Mon, 13 Jun 2022 17:01:01 +0300
+Subject: [PATCH 05/15] Don't use PATTERNED style ripple effect by default
+
+Slow GPUs (MALI400) can't handle PATTERNED_STYLE ripple effect.
+It causes FPS drop down to ~20.
+
+Signed-off-by: Roman Stratiienko <r.stratiienko@gmail.com>
+Change-Id: Ib12eb32259b5bbd0de8986c534c94ea23c2fc3e1
+---
+ graphics/java/android/graphics/drawable/RippleDrawable.java | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/graphics/java/android/graphics/drawable/RippleDrawable.java b/graphics/java/android/graphics/drawable/RippleDrawable.java
+index 641a2ae7b2c32..320146cf3de89 100644
+--- a/graphics/java/android/graphics/drawable/RippleDrawable.java
++++ b/graphics/java/android/graphics/drawable/RippleDrawable.java
+@@ -158,7 +158,7 @@ public class RippleDrawable extends LayerDrawable {
+     private static final LinearInterpolator LINEAR_INTERPOLATOR = new LinearInterpolator();
+     private static final int DEFAULT_EFFECT_COLOR = 0x8dffffff;
+     /** Temporary flag for teamfood. **/
+-    private static final boolean FORCE_PATTERNED_STYLE = true;
++    private static final boolean FORCE_PATTERNED_STYLE = false;
+ 
+     private final Rect mTempRect = new Rect();
+ 
+
+From 6d4a74e8845f10908a04696417c059507849ca36 Mon Sep 17 00:00:00 2001
+From: Yaroslav Zviezda <acroreiser@gmail.com>
+Date: Sun, 16 Jul 2023 13:38:58 +0300
+Subject: [PATCH 06/15] batterysaver: add property to disable night mode on
+ battery saver
+
+Night theme on battery saver mode is useful on AMOLED panels
+but does not provide benefits for IPS. To avoid runtime overhead of theme switch
+we can just keep current theme by setting "ro.config.night_mode_on_battery_saver" to "false".
+
+Change-Id: I4800d0d3aa3965bb8fbd5301482061dc8153cda6
+---
+ .../android/server/power/batterysaver/BatterySaverPolicy.java  | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/services/core/java/com/android/server/power/batterysaver/BatterySaverPolicy.java b/services/core/java/com/android/server/power/batterysaver/BatterySaverPolicy.java
+index 5d90851443346..9664d8666d189 100644
+--- a/services/core/java/com/android/server/power/batterysaver/BatterySaverPolicy.java
++++ b/services/core/java/com/android/server/power/batterysaver/BatterySaverPolicy.java
+@@ -27,6 +27,7 @@
+ import android.os.PowerManager;
+ import android.os.PowerManager.ServiceType;
+ import android.os.PowerSaveState;
++import android.os.SystemProperties;
+ import android.provider.DeviceConfig;
+ import android.provider.Settings;
+ import android.text.TextUtils;
+@@ -505,7 +506,7 @@ private void updatePolicyDependenciesLocked() {
+                 rawPolicy.enableDataSaver,
+                 rawPolicy.enableFirewall,
+                 // Don't force night mode when car projection is enabled.
+-                rawPolicy.enableNightMode && !mAutomotiveProjectionActive.get(),
++                rawPolicy.enableNightMode && !mAutomotiveProjectionActive.get() && SystemProperties.getBoolean("ro.config.night_mode_on_battery_saver", true),
+                 rawPolicy.enableQuickDoze,
+                 rawPolicy.forceAllAppsStandby,
+                 rawPolicy.forceBackgroundCheck,
+
+From a5c941f932da9470cf8669db68a4e4b4bd915707 Mon Sep 17 00:00:00 2001
+From: Yaroslav Zviezda <acroreiser@gmail.com>
+Date: Sun, 3 Dec 2023 01:46:06 +0300
+Subject: [PATCH 07/15] am: allow to tune killing cached processes until/post
+ boot completed
+
+By default Android applies background apps limits at 10 minutes after boot completion.
+This can lead to high memory pressure and bad lags due to thrashing.
+
+Here is a couple of system properties to tune this behavior on legacy devices:
+* ro.am.no_kill_cached_processes_until_boot_completed (true)
+* ro.am.no_kill_cached_processes_post_boot_completed_duration_millis (600_000)
+---
+ .../com/android/server/am/ActivityManagerConstants.java    | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/services/core/java/com/android/server/am/ActivityManagerConstants.java b/services/core/java/com/android/server/am/ActivityManagerConstants.java
+index ff837974bf3c1..707e91e8ea013 100644
+--- a/services/core/java/com/android/server/am/ActivityManagerConstants.java
++++ b/services/core/java/com/android/server/am/ActivityManagerConstants.java
+@@ -43,6 +43,7 @@
+ import android.os.Message;
+ import android.os.PowerExemptionManager;
+ import android.os.SystemClock;
++import android.os.SystemProperties;
+ import android.provider.DeviceConfig;
+ import android.provider.DeviceConfig.OnPropertiesChangedListener;
+ import android.provider.DeviceConfig.Properties;
+@@ -874,11 +875,13 @@ final class ActivityManagerConstants extends ContentObserver {
+             "no_kill_cached_processes_post_boot_completed_duration_millis";
+ 
+     /** @see #mNoKillCachedProcessesUntilBootCompleted */
+-    private static final boolean DEFAULT_NO_KILL_CACHED_PROCESSES_UNTIL_BOOT_COMPLETED = true;
++    private static final boolean DEFAULT_NO_KILL_CACHED_PROCESSES_UNTIL_BOOT_COMPLETED =
++            SystemProperties.getBoolean("ro.am.no_kill_cached_processes_until_boot_completed", true);
+ 
+     /** @see #mNoKillCachedProcessesPostBootCompletedDurationMillis */
+     private static final long
+-            DEFAULT_NO_KILL_CACHED_PROCESSES_POST_BOOT_COMPLETED_DURATION_MILLIS = 600_000;
++            DEFAULT_NO_KILL_CACHED_PROCESSES_POST_BOOT_COMPLETED_DURATION_MILLIS =
++            SystemProperties.getLong("ro.am.no_kill_cached_processes_post_boot_completed_duration_millis", 600_000);
+ 
+     /**
+      * If true, do not kill excessive cached processes proactively, until user-0 is unlocked.
+
+From c83e9e04fa7665c1a6241790b249a84c80994b7e Mon Sep 17 00:00:00 2001
+From: html6405 <peter.schelchshorn@mhs-solutions.at>
+Date: Wed, 27 Dec 2023 18:18:57 +0100
+Subject: [PATCH 08/15] Revert "Revert "Treat process group creation failure
+ due to a dead process as non-fatal""
+
+This reverts commit b910c590fac4a323043bf1ad12df881ac3fce7cf.
+---
+ core/jni/com_android_internal_os_Zygote.cpp | 13 +++++++++----
+ 1 file changed, 9 insertions(+), 4 deletions(-)
+
+diff --git a/core/jni/com_android_internal_os_Zygote.cpp b/core/jni/com_android_internal_os_Zygote.cpp
+index 3ed9f49ede26f..25db17577b1e6 100644
+--- a/core/jni/com_android_internal_os_Zygote.cpp
++++ b/core/jni/com_android_internal_os_Zygote.cpp
+@@ -1968,10 +1968,15 @@ static void SpecializeCommon(JNIEnv* env, uid_t uid, gid_t gid, jintArray gids,
+     if (getuid() == 0) {
+         const int rc = createProcessGroup(uid, getpid());
+         if (rc != 0) {
+-            fail_fn(rc == -EROFS ? CREATE_ERROR("createProcessGroup failed, kernel missing "
+-                                                "CONFIG_CGROUP_CPUACCT?")
+-                                 : CREATE_ERROR("createProcessGroup(%d, %d) failed: %s", uid,
+-                                                /* pid= */ 0, strerror(-rc)));
++            if (rc == -ESRCH) {
++                // If process is dead, treat this as a non-fatal error
++                ALOGE("createProcessGroup(%d, %d) failed: %s", uid, /* pid= */ 0, strerror(-rc));
++            } else {
++                fail_fn(rc == -EROFS ? CREATE_ERROR("createProcessGroup failed, kernel missing "
++                                                    "CONFIG_CGROUP_CPUACCT?")
++                                     : CREATE_ERROR("createProcessGroup(%d, %d) failed: %s", uid,
++                                                    /* pid= */ 0, strerror(-rc)));
++            }
+         }
+     }
+ 
+
+From 927e523f75a6c8f52d4f08c86e3882f6201425bc Mon Sep 17 00:00:00 2001
+From: Pierre-Hugues Husson <phh@phh.me>
+Date: Wed, 18 Oct 2023 16:53:40 -0400
+Subject: [PATCH 09/15] Ignore cgroup creation errors
+
+For old kernels who don't have those modern cgroups
+---
+ core/jni/com_android_internal_os_Zygote.cpp               | 3 +++
+ services/core/java/com/android/server/am/ProcessList.java | 5 -----
+ 2 files changed, 3 insertions(+), 5 deletions(-)
+
+diff --git a/core/jni/com_android_internal_os_Zygote.cpp b/core/jni/com_android_internal_os_Zygote.cpp
+index 25db17577b1e6..6cfdccd160daf 100644
+--- a/core/jni/com_android_internal_os_Zygote.cpp
++++ b/core/jni/com_android_internal_os_Zygote.cpp
+@@ -1968,6 +1968,8 @@ static void SpecializeCommon(JNIEnv* env, uid_t uid, gid_t gid, jintArray gids,
+     if (getuid() == 0) {
+         const int rc = createProcessGroup(uid, getpid());
+         if (rc != 0) {
++                ALOGE("createProcessGroup(%d, %d) failed: %s", uid, /* pid= */ 0, strerror(-rc));
++#if 0
+             if (rc == -ESRCH) {
+                 // If process is dead, treat this as a non-fatal error
+                 ALOGE("createProcessGroup(%d, %d) failed: %s", uid, /* pid= */ 0, strerror(-rc));
+@@ -1977,6 +1979,7 @@ static void SpecializeCommon(JNIEnv* env, uid_t uid, gid_t gid, jintArray gids,
+                                      : CREATE_ERROR("createProcessGroup(%d, %d) failed: %s", uid,
+                                                     /* pid= */ 0, strerror(-rc)));
+             }
++#endif
+         }
+     }
+ 
+diff --git a/services/core/java/com/android/server/am/ProcessList.java b/services/core/java/com/android/server/am/ProcessList.java
+index 89c89944e92e8..641b2cc824e01 100644
+--- a/services/core/java/com/android/server/am/ProcessList.java
++++ b/services/core/java/com/android/server/am/ProcessList.java
+@@ -2513,14 +2513,9 @@ private Process.ProcessStartResult startProcess(HostingRecord hostingRecord, Str
+                         // If we're not told to skip the process group creation, go create it.
+                         final int res = Process.createProcessGroup(uid, startResult.pid);
+                         if (res < 0) {
+-                            if (res == -OsConstants.ESRCH) {
+                                 Slog.e(ActivityManagerService.TAG,
+                                         "Unable to create process group for "
+                                         + app.processName + " (" + startResult.pid + ")");
+-                            } else {
+-                                throw new AssertionError("Unable to create process group for "
+-                                    + app.processName + " (" + startResult.pid + ")");
+-                            }
+                         } else {
+                             app.mProcessGroupCreated = true;
+                         }
+
+From e8d08fcaf16e1650fc62f756929af02c7ef9cce9 Mon Sep 17 00:00:00 2001
+From: Yaroslav Zviezda <acroreiser@gmail.com>
+Date: Sat, 6 Nov 2021 01:26:00 +0300
+Subject: [PATCH 10/15] Revert "CachedAppOptimizer: use new cgroup api for
+ freezer path"
+
+This reverts commit 9767e2a416425a1ed390a2cac361f5a5ee112d56.
+---
+ .../core/jni/com_android_server_am_CachedAppOptimizer.cpp | 8 +-------
+ 1 file changed, 1 insertion(+), 7 deletions(-)
+
+diff --git a/services/core/jni/com_android_server_am_CachedAppOptimizer.cpp b/services/core/jni/com_android_server_am_CachedAppOptimizer.cpp
+index 4403bce484ad2..f98def3b2df71 100644
+--- a/services/core/jni/com_android_server_am_CachedAppOptimizer.cpp
++++ b/services/core/jni/com_android_server_am_CachedAppOptimizer.cpp
+@@ -561,13 +561,7 @@ static jint com_android_server_am_CachedAppOptimizer_getBinderFreezeInfo(JNIEnv
+ 
+ static jstring com_android_server_am_CachedAppOptimizer_getFreezerCheckPath(JNIEnv* env,
+                                                                             jobject clazz) {
+-    std::string path;
+-
+-    if (!getAttributePathForTask("FreezerState", getpid(), &path)) {
+-        path = "";
+-    }
+-
+-    return env->NewStringUTF(path.c_str());
++    return env->NewStringUTF(CGROUP_FREEZE_PATH);
+ }
+ 
+ static jboolean com_android_server_am_CachedAppOptimizer_isFreezerProfileValid(JNIEnv* env) {
+
+From 325d28c1dfe982c9c2bbfbba0e74438b9a7622c5 Mon Sep 17 00:00:00 2001
+From: Yaroslav Zviezda <acroreiser@gmail.com>
+Date: Sat, 6 Nov 2021 01:27:33 +0300
+Subject: [PATCH 11/15] Revert "CachedAppOptimizer: remove native freezer
+ enabling code"
+
+Adapted for U.
+
+This reverts commit f354af53bef47ac79c6f487d93ee688179dddde9.
+
+Change-Id: I74da883baead2113cb506f85cbdf826dbc141646
+---
+ .../android/server/am/CachedAppOptimizer.java | 21 +++++++++++++++----
+ ...m_android_server_am_CachedAppOptimizer.cpp | 17 +++++++++++++++
+ 2 files changed, 34 insertions(+), 4 deletions(-)
+
+diff --git a/services/core/java/com/android/server/am/CachedAppOptimizer.java b/services/core/java/com/android/server/am/CachedAppOptimizer.java
+index 150f406321f81..98d78b5fed71d 100644
+--- a/services/core/java/com/android/server/am/CachedAppOptimizer.java
++++ b/services/core/java/com/android/server/am/CachedAppOptimizer.java
+@@ -1045,6 +1045,18 @@ public synchronized boolean enableFreezer(boolean enable) {
+         return true;
+     }
+ 
++    /**
++     * Enable or disable the freezer. When enable == false all frozen processes are unfrozen,
++     * but aren't removed from the freezer. While in this state, processes can be added or removed
++     * by using Process.setProcessFrozen(), but they wouldn't be actually frozen until the freezer
++     * is enabled. If enable == true all processes in the freezer are frozen.
++     *
++     * @param enable Specify whether to enable (true) or disable (false) the freezer.
++     *
++     * @hide
++     */
++    private static native void enableFreezerInternal(boolean enable);
++
+     /**
+      * Informs binder that a process is about to be frozen. If freezer is enabled on a process via
+      * this method, this method will synchronously dispatch all pending transactions to the
+@@ -1101,10 +1113,11 @@ public static boolean isFreezerSupported() {
+                 // Also check freezer binder ioctl
+                 Slog.d(TAG_AM, "Checking binder freezer ioctl");
+                 getBinderFreezeInfo(Process.myPid());
+-
+-                // Check if task_profiles.json contains invalid profiles
+-                Slog.d(TAG_AM, "Checking freezer profiles");
+-                supported = isFreezerProfileValid();
++                supported = true;
++                // This is a workaround after reverting the cgroup v2 uid/pid hierarchy due to
++                // http://b/179006802.
++                // TODO: remove once the uid/pid hierarchy is restored
++                enableFreezerInternal(true);
+             } else {
+                 Slog.e(TAG_AM, "Unexpected value in cgroup.freeze");
+             }
+diff --git a/services/core/jni/com_android_server_am_CachedAppOptimizer.cpp b/services/core/jni/com_android_server_am_CachedAppOptimizer.cpp
+index f98def3b2df71..61cbc279cf589 100644
+--- a/services/core/jni/com_android_server_am_CachedAppOptimizer.cpp
++++ b/services/core/jni/com_android_server_am_CachedAppOptimizer.cpp
+@@ -526,6 +526,21 @@ static void com_android_server_am_CachedAppOptimizer_compactProcess(JNIEnv*, job
+     compactProcessOrFallback(pid, compactionFlags);
+ }
+ 
++static void com_android_server_am_CachedAppOptimizer_enableFreezerInternal(
++        JNIEnv *env, jobject clazz, jboolean enable) {
++    bool success = true;
++
++    if (enable) {
++        success = SetTaskProfiles(0, {"FreezerEnabled"}, true);
++    } else {
++        success = SetTaskProfiles(0, {"FreezerDisabled"}, true);
++    }
++
++    if (!success) {
++        jniThrowException(env, "java/lang/RuntimeException", "Unknown error");
++    }
++}
++
+ static jint com_android_server_am_CachedAppOptimizer_freezeBinder(JNIEnv* env, jobject clazz,
+                                                                   jint pid, jboolean freeze,
+                                                                   jint timeout_ms) {
+@@ -585,6 +600,8 @@ static const JNINativeMethod sMethods[] = {
+          (void*)com_android_server_am_CachedAppOptimizer_getMemoryFreedCompaction},
+         {"compactSystem", "()V", (void*)com_android_server_am_CachedAppOptimizer_compactSystem},
+         {"compactProcess", "(II)V", (void*)com_android_server_am_CachedAppOptimizer_compactProcess},
++        {"enableFreezerInternal", "(Z)V",
++         (void*)com_android_server_am_CachedAppOptimizer_enableFreezerInternal},
+         {"freezeBinder", "(IZI)I", (void*)com_android_server_am_CachedAppOptimizer_freezeBinder},
+         {"getBinderFreezeInfo", "(I)I",
+          (void*)com_android_server_am_CachedAppOptimizer_getBinderFreezeInfo},
+
+From c5dc21c02e965262c292c0bc8d5a88dd2bd73007 Mon Sep 17 00:00:00 2001
+From: Yaroslav Zviezda <acroreiser@gmail.com>
+Date: Sat, 6 Nov 2021 01:29:17 +0300
+Subject: [PATCH 12/15] Revert "CachedAppOptimizer: don't hardcode freezer
+ path"
+
+Adapted for U.
+
+This reverts commit e5430976256a10c7ed727f7c7c96ff0bc1db4cde.
+
+Change-Id: I1fb97700681c100d86d7dcd5b7f9bc247aa5e7c9
+---
+ .../java/com/android/server/am/CachedAppOptimizer.java | 10 +---------
+ .../jni/com_android_server_am_CachedAppOptimizer.cpp   |  7 -------
+ 2 files changed, 1 insertion(+), 16 deletions(-)
+
+diff --git a/services/core/java/com/android/server/am/CachedAppOptimizer.java b/services/core/java/com/android/server/am/CachedAppOptimizer.java
+index 98d78b5fed71d..608161c1a9d82 100644
+--- a/services/core/java/com/android/server/am/CachedAppOptimizer.java
++++ b/services/core/java/com/android/server/am/CachedAppOptimizer.java
+@@ -1084,12 +1084,6 @@ public synchronized boolean enableFreezer(boolean enable) {
+      */
+     private static native int getBinderFreezeInfo(int pid);
+ 
+-    /**
+-     * Returns the path to be checked to verify whether the freezer is supported by this system.
+-     * @return absolute path to the file
+-     */
+-    private static native String getFreezerCheckPath();
+-
+     /**
+      * Check if task_profiles.json includes valid freezer profiles and actions
+      * @return false if there are invalid profiles or actions
+@@ -1104,9 +1098,7 @@ public static boolean isFreezerSupported() {
+         FileReader fr = null;
+ 
+         try {
+-            String path = getFreezerCheckPath();
+-            Slog.d(TAG_AM, "Checking cgroup freezer: " + path);
+-            fr = new FileReader(path);
++            fr = new FileReader("/sys/fs/cgroup/uid_0/cgroup.freeze");
+             char state = (char) fr.read();
+ 
+             if (state == '1' || state == '0') {
+diff --git a/services/core/jni/com_android_server_am_CachedAppOptimizer.cpp b/services/core/jni/com_android_server_am_CachedAppOptimizer.cpp
+index 61cbc279cf589..ffc5af44738e9 100644
+--- a/services/core/jni/com_android_server_am_CachedAppOptimizer.cpp
++++ b/services/core/jni/com_android_server_am_CachedAppOptimizer.cpp
+@@ -574,11 +574,6 @@ static jint com_android_server_am_CachedAppOptimizer_getBinderFreezeInfo(JNIEnv
+     return retVal;
+ }
+ 
+-static jstring com_android_server_am_CachedAppOptimizer_getFreezerCheckPath(JNIEnv* env,
+-                                                                            jobject clazz) {
+-    return env->NewStringUTF(CGROUP_FREEZE_PATH);
+-}
+-
+ static jboolean com_android_server_am_CachedAppOptimizer_isFreezerProfileValid(JNIEnv* env) {
+     uid_t uid = getuid();
+     pid_t pid = getpid();
+@@ -605,8 +600,6 @@ static const JNINativeMethod sMethods[] = {
+         {"freezeBinder", "(IZI)I", (void*)com_android_server_am_CachedAppOptimizer_freezeBinder},
+         {"getBinderFreezeInfo", "(I)I",
+          (void*)com_android_server_am_CachedAppOptimizer_getBinderFreezeInfo},
+-        {"getFreezerCheckPath", "()Ljava/lang/String;",
+-         (void*)com_android_server_am_CachedAppOptimizer_getFreezerCheckPath},
+         {"isFreezerProfileValid", "()Z",
+          (void*)com_android_server_am_CachedAppOptimizer_isFreezerProfileValid}};
+ 
+
+From 571443929f98f6d1378f8df9dcbee94811a2ca4c Mon Sep 17 00:00:00 2001
+From: Yaroslav Zviezda <acroreiser@gmail.com>
+Date: Mon, 12 Sep 2022 15:50:08 +0300
+Subject: [PATCH 13/15] CachedAppOptimizer: revert freezer to cgroups v1
+
+Change-Id: If7e1609087bfbd1abf989c63b8d2a82b2599e3c6
+---
+ .../java/com/android/server/am/CachedAppOptimizer.java | 10 +++-------
+ 1 file changed, 3 insertions(+), 7 deletions(-)
+
+diff --git a/services/core/java/com/android/server/am/CachedAppOptimizer.java b/services/core/java/com/android/server/am/CachedAppOptimizer.java
+index 608161c1a9d82..3f598b990eb60 100644
+--- a/services/core/java/com/android/server/am/CachedAppOptimizer.java
++++ b/services/core/java/com/android/server/am/CachedAppOptimizer.java
+@@ -1098,18 +1098,14 @@ public static boolean isFreezerSupported() {
+         FileReader fr = null;
+ 
+         try {
+-            fr = new FileReader("/sys/fs/cgroup/uid_0/cgroup.freeze");
+-            char state = (char) fr.read();
++            fr = new FileReader("/dev/freezer/frozen/freezer.killable");
++            int i = fr.read();
+ 
+-            if (state == '1' || state == '0') {
++            if ((char) i == '1') {
+                 // Also check freezer binder ioctl
+                 Slog.d(TAG_AM, "Checking binder freezer ioctl");
+                 getBinderFreezeInfo(Process.myPid());
+                 supported = true;
+-                // This is a workaround after reverting the cgroup v2 uid/pid hierarchy due to
+-                // http://b/179006802.
+-                // TODO: remove once the uid/pid hierarchy is restored
+-                enableFreezerInternal(true);
+             } else {
+                 Slog.e(TAG_AM, "Unexpected value in cgroup.freeze");
+             }
+
+From b299255b248ecbec7ab587b3eefa917ce88fbbf4 Mon Sep 17 00:00:00 2001
+From: khalvat-M <mmba313@gmail.com>
+Date: Sun, 14 Jul 2024 06:15:47 +0330
+Subject: [PATCH 14/15] Revert "Remove deprecated IRadio <1.4 APIs and
+ references"
+
+This reverts commit 4d53aa0caec7029bf6c9b5789c1708bc4bb71b76.
+---
+ .../android/telephony/TelephonyManager.java   | 23 +++++++++++++++++++
+ .../internal/telephony/ITelephony.aidl        | 11 +++++++++
+ .../internal/telephony/RILConstants.java      |  5 ++++
+ 3 files changed, 39 insertions(+)
+
+diff --git a/telephony/java/android/telephony/TelephonyManager.java b/telephony/java/android/telephony/TelephonyManager.java
+index 88acbabc0e0f5..c74f733045b03 100644
+--- a/telephony/java/android/telephony/TelephonyManager.java
++++ b/telephony/java/android/telephony/TelephonyManager.java
+@@ -11360,6 +11360,29 @@ public Set<Integer> getRadioPowerOffReasons() {
+         return result;
+     }
+ 
++    /**
++     * Returns the result and response from RIL for oem request
++     *
++     * @param oemReq the data is sent to ril.
++     * @param oemResp the respose data from RIL.
++     * @return negative value request was not handled or get error
++     *         0 request was handled succesfully, but no response data
++     *         positive value success, data length of response
++     * @hide
++     * @deprecated OEM needs a vendor-extension hal and their apps should use that instead
++     */
++    @Deprecated
++    public int invokeOemRilRequestRaw(byte[] oemReq, byte[] oemResp) {
++        try {
++            ITelephony telephony = getITelephony();
++            if (telephony != null)
++                return telephony.invokeOemRilRequestRaw(oemReq, oemResp);
++        } catch (RemoteException ex) {
++        } catch (NullPointerException ex) {
++        }
++        return -1;
++    }
++
+     /**
+      * Shut down all the live radios over all the slot indexes.
+      *
+diff --git a/telephony/java/com/android/internal/telephony/ITelephony.aidl b/telephony/java/com/android/internal/telephony/ITelephony.aidl
+index ff2ee27abc60e..d7ca28c447a6f 100644
+--- a/telephony/java/com/android/internal/telephony/ITelephony.aidl
++++ b/telephony/java/com/android/internal/telephony/ITelephony.aidl
+@@ -1194,6 +1194,17 @@ interface ITelephony {
+             in List<String> gsmNonRoamingList, in List<String> cdmaRoamingList,
+             in List<String> cdmaNonRoamingList);
+ 
++    /**
++     * Returns the result and response from RIL for oem request
++     *
++     * @param oemReq the data is sent to ril.
++     * @param oemResp the respose data from RIL.
++     * @return negative value request was not handled or get error
++     *         0 request was handled succesfully, but no response data
++     *         positive value success, data length of response
++     */
++    int invokeOemRilRequestRaw(in byte[] oemReq, out byte[] oemResp);
++
+     /**
+      * Check if any mobile Radios need to be shutdown.
+      *
+diff --git a/telephony/java/com/android/internal/telephony/RILConstants.java b/telephony/java/com/android/internal/telephony/RILConstants.java
+index b7dd4df1c8433..5f5e21916bd0b 100644
+--- a/telephony/java/com/android/internal/telephony/RILConstants.java
++++ b/telephony/java/com/android/internal/telephony/RILConstants.java
+@@ -298,6 +298,11 @@ call in class C */
+     int SETUP_DATA_AUTH_CHAP      = 2;
+     int SETUP_DATA_AUTH_PAP_CHAP  = 3;
+ 
++    /* LCE service related constants. */
++    int LCE_NOT_AVAILABLE = -1;
++    int LCE_STOPPED = 0;
++    int LCE_ACTIVE = 1;
++
+     /**
+      * No restriction at all including voice/SMS/USSD/SS/AV64
+      * and packet data.
+
+From 54d4461571228f393c1fdd6db4649023936dac81 Mon Sep 17 00:00:00 2001
+From: Alberto Ponces <ponces26@gmail.com>
+Date: Fri, 20 Oct 2023 09:26:19 +0000
+Subject: [PATCH 15/15] Revert "Removed IWLAN legacy mode support"
+
+This reverts commit 2832dee607ab33eee688abea206f4adfcfc896f1.
+---
+ .../java/android/telephony/ServiceState.java  | 30 ++++++++++++-------
+ 1 file changed, 20 insertions(+), 10 deletions(-)
+
+diff --git a/telephony/java/android/telephony/ServiceState.java b/telephony/java/android/telephony/ServiceState.java
+index db167c0592df4..ef64fc9fcc65a 100644
+--- a/telephony/java/android/telephony/ServiceState.java
++++ b/telephony/java/android/telephony/ServiceState.java
+@@ -1217,8 +1217,13 @@ public String toString() {
+ 
+     /**
+      * Initialize the service state. Set everything to the default value.
++     *
++     * @param legacyMode {@code true} if the device is on IWLAN legacy mode, where IWLAN is
++     * considered as a RAT on WWAN {@link NetworkRegistrationInfo}. {@code false} if the device
++     * is on AP-assisted mode, where IWLAN should be reported through WLAN.
++     * {@link NetworkRegistrationInfo}.
+      */
+-    private void init() {
++    private void init(boolean legacyMode) {
+         if (DBG) Rlog.d(LOG_TAG, "init");
+         mVoiceRegState = STATE_OUT_OF_SERVICE;
+         mDataRegState = STATE_OUT_OF_SERVICE;
+@@ -1250,11 +1255,13 @@ private void init() {
+                     .setTransportType(AccessNetworkConstants.TRANSPORT_TYPE_WWAN)
+                     .setRegistrationState(NetworkRegistrationInfo.REGISTRATION_STATE_UNKNOWN)
+                     .build());
+-            addNetworkRegistrationInfo(new NetworkRegistrationInfo.Builder()
+-                    .setDomain(NetworkRegistrationInfo.DOMAIN_PS)
+-                    .setTransportType(AccessNetworkConstants.TRANSPORT_TYPE_WLAN)
+-                    .setRegistrationState(NetworkRegistrationInfo.REGISTRATION_STATE_UNKNOWN)
+-                    .build());
++            if (!legacyMode) {
++                addNetworkRegistrationInfo(new NetworkRegistrationInfo.Builder()
++                        .setDomain(NetworkRegistrationInfo.DOMAIN_PS)
++                        .setTransportType(AccessNetworkConstants.TRANSPORT_TYPE_WLAN)
++                        .setRegistrationState(NetworkRegistrationInfo.REGISTRATION_STATE_UNKNOWN)
++                        .build());
++            }
+         }
+         mOperatorAlphaLongRaw = null;
+         mOperatorAlphaShortRaw = null;
+@@ -1263,11 +1270,11 @@ private void init() {
+     }
+ 
+     public void setStateOutOfService() {
+-        init();
++        init(true);
+     }
+ 
+     public void setStateOff() {
+-        init();
++        init(true);
+         mVoiceRegState = STATE_POWER_OFF;
+         mDataRegState = STATE_POWER_OFF;
+     }
+@@ -1275,11 +1282,14 @@ public void setStateOff() {
+     /**
+      * Set the service state to out-of-service
+      *
++     * @param legacyMode {@code true} if the device is on IWLAN legacy mode, where IWLAN is
++     * considered as a RAT on WWAN {@link NetworkRegistrationInfo}. {@code false} if the device
++     * is on AP-assisted mode, where IWLAN should be reported through WLAN.
+      * @param powerOff {@code true} if this is a power off case (i.e. Airplane mode on).
+      * @hide
+      */
+-    public void setOutOfService(boolean powerOff) {
+-        init();
++    public void setOutOfService(boolean legacyMode, boolean powerOff) {
++        init(legacyMode);
+         if (powerOff) {
+             mVoiceRegState = STATE_POWER_OFF;
+             mDataRegState = STATE_POWER_OFF;

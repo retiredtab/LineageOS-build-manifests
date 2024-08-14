@@ -1,0 +1,150 @@
+From ad889df197c471279398b9b81c677bdd9ee40f19 Mon Sep 17 00:00:00 2001
+From: Yaroslav Zviezda <acroreiser@gmail.com>
+Date: Fri, 21 Oct 2022 19:31:55 +0300
+Subject: [PATCH 1/5] libbinder: make threadpool shrinking non-fatal
+
+Change-Id: Ic5c5ecc4c38d5f625e4c26b7202315df7440e396
+---
+ libs/binder/ProcessState.cpp | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/libs/binder/ProcessState.cpp b/libs/binder/ProcessState.cpp
+index fb2781be590..9e36b0c0beb 100644
+--- a/libs/binder/ProcessState.cpp
++++ b/libs/binder/ProcessState.cpp
+@@ -419,8 +419,8 @@ void ProcessState::spawnPooledThread(bool isMain)
+ }
+ 
+ status_t ProcessState::setThreadPoolMaxThreadCount(size_t maxThreads) {
+-    LOG_ALWAYS_FATAL_IF(mThreadPoolStarted && maxThreads < mMaxThreads,
+-           "Binder threadpool cannot be shrunk after starting");
++    //LOG_ALWAYS_FATAL_IF(mThreadPoolStarted && maxThreads < mMaxThreads,
++    //       "Binder threadpool cannot be shrunk after starting");
+     status_t result = NO_ERROR;
+     if (ioctl(mDriverFD, BINDER_SET_MAX_THREADS, &maxThreads) != -1) {
+         mMaxThreads = maxThreads;
+
+From 41c39f7312f25f0fbe60234004752244e19119a3 Mon Sep 17 00:00:00 2001
+From: Arne Coucheron <arco68@gmail.com>
+Date: Fri, 6 Nov 2020 15:22:40 -0500
+Subject: [PATCH 2/5] SurfaceFlinger: Don't cleanup resources from previous
+ frame
+
+Causes bad lag on some legacy devices.
+
+Change-Id: I89913d214c7377c73bd307696dbf9aac2f9a5c0a
+
+SurfaceFlinger: Don't cleanup resources from previous frame on display
+
+we have this again ha ha
+
+Change-Id: I3ffe5247efdf5053a8ae5b9b43d3cdff1272a1fe
+
+SurfaceFlinger: Don't cleanup resources from previous frame on virtual display
+
+Causes bad lag on some legacy devices while WFD
+---
+ services/surfaceflinger/Android.bp         | 1 +
+ services/surfaceflinger/SurfaceFlinger.cpp | 4 ++++
+ 2 files changed, 5 insertions(+)
+
+diff --git a/services/surfaceflinger/Android.bp b/services/surfaceflinger/Android.bp
+index d14ad417d52..ab723ace1dd 100644
+--- a/services/surfaceflinger/Android.bp
++++ b/services/surfaceflinger/Android.bp
+@@ -43,6 +43,7 @@ cc_defaults {
+     defaults: [
+         "android.hardware.graphics.composer3-ndk_shared",
+         "android.hardware.power-ndk_shared",
++        "disable_postrender_cleanup_defaults",
+         "librenderengine_deps",
+         "libtimestats_deps",
+         "surfaceflinger_defaults",
+diff --git a/services/surfaceflinger/SurfaceFlinger.cpp b/services/surfaceflinger/SurfaceFlinger.cpp
+index 95829c7bd68..614cebae559 100644
+--- a/services/surfaceflinger/SurfaceFlinger.cpp
++++ b/services/surfaceflinger/SurfaceFlinger.cpp
+@@ -3198,12 +3198,16 @@ void SurfaceFlinger::onCompositionPresented(PhysicalDisplayId pacesetterId,
+     }
+ 
+     if (hasPacesetterDisplay && !pacesetterDisplay->isPoweredOn()) {
++#ifndef DISABLE_POSTRENDER_CLEANUP
+         getRenderEngine().cleanupPostRender();
++#endif
+         return;
+     }
+ 
++#ifndef DISABLE_POSTRENDER_CLEANUP
+     // Cleanup any outstanding resources due to rendering a prior frame.
+     getRenderEngine().cleanupPostRender();
++#endif
+ 
+     if (mNumTrustedPresentationListeners > 0) {
+         // We avoid any reverse traversal upwards so this shouldn't be too expensive
+
+From 148f6188808a6d03e240b62c2b3e6a30d6e2a5c7 Mon Sep 17 00:00:00 2001
+From: ivanmeler <i_ivan@windowslive.com>
+Date: Tue, 23 Aug 2022 21:26:45 +0000
+Subject: [PATCH 3/5] Disable gpu service
+
+Just comment it out whole we cant use it
+---
+ services/gpuservice/gpuservice.rc | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/services/gpuservice/gpuservice.rc b/services/gpuservice/gpuservice.rc
+index 0da8bd3812f..b5b271402db 100644
+--- a/services/gpuservice/gpuservice.rc
++++ b/services/gpuservice/gpuservice.rc
+@@ -2,3 +2,4 @@ service gpu /system/bin/gpuservice
+     class core
+     user gpu_service
+     group graphics readtracefs
++    disabled
+
+From 41a7b59d807938a3ee10cb200310a1007babf28c Mon Sep 17 00:00:00 2001
+From: Pierre-Hugues Husson <phh@phh.me>
+Date: Tue, 7 May 2024 22:34:40 +0000
+Subject: [PATCH 4/5] Disable gpuservice on old BPF-less kernel
+
+Change-Id: I8e1626e2e9d12ee0dc03d758799bc88085899476
+---
+ services/gpuservice/gpumem/GpuMem.cpp | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/services/gpuservice/gpumem/GpuMem.cpp b/services/gpuservice/gpumem/GpuMem.cpp
+index 141fe021ee8..90b8b5c52d3 100644
+--- a/services/gpuservice/gpumem/GpuMem.cpp
++++ b/services/gpuservice/gpumem/GpuMem.cpp
+@@ -48,6 +48,7 @@ void GpuMem::initialize() {
+     if (fd < 0) {
+         ALOGE("Failed to retrieve pinned program from %s [%d(%s)]", kGpuMemTotalProgPath, errno,
+               strerror(errno));
++        while(true) sleep(1);
+         return;
+     }
+ 
+
+From f91ace6144136e85387f937c9967d939dda3169e Mon Sep 17 00:00:00 2001
+From: Andy CrossGate Yan <GeForce8800Ultra@gmail.com>
+Date: Sun, 26 May 2024 21:34:17 +0800
+Subject: [PATCH 5/5] SurfaceFlinger: Disable SF HWC backpressure
+
+---
+ services/surfaceflinger/SurfaceFlinger.cpp | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/services/surfaceflinger/SurfaceFlinger.cpp b/services/surfaceflinger/SurfaceFlinger.cpp
+index 614cebae559..1ffbdc9388c 100644
+--- a/services/surfaceflinger/SurfaceFlinger.cpp
++++ b/services/surfaceflinger/SurfaceFlinger.cpp
+@@ -2557,7 +2557,8 @@ bool SurfaceFlinger::commit(PhysicalDisplayId pacesetterId,
+         }
+     }
+ 
+-    if (pacesetterFrameTarget.isFramePending()) {
++    if (base::GetBoolProperty("persist.sys.enable_sf_hwc_backpressure"s, true)
++            && pacesetterFrameTarget.isFramePending()) {
+         if (mBackpressureGpuComposition || pacesetterFrameTarget.didMissHwcFrame()) {
+             if (FlagManager::getInstance().vrr_config()) {
+                 mScheduler->getVsyncSchedule()->getTracker().onFrameMissed(

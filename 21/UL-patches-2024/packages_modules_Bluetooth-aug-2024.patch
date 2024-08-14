@@ -1,0 +1,304 @@
+From 2eae424b70008e6a08e115f00512e9f19ceb415d Mon Sep 17 00:00:00 2001
+From: Peter Cai <peter@typeblog.net>
+Date: Wed, 24 Aug 2022 15:45:18 -0400
+Subject: [PATCH 1/4] audio_hal_interface: Optionally use sysbta HAL
+
+Required to support sysbta, our system-side bt audio implementation.
+
+Change-Id: I59973e6ec84c5923be8a7c67b36b2e237f000860
+---
+ .../audio_hal_interface/aidl/client_interface_aidl.cc |  6 +++---
+ .../audio_hal_interface/aidl/client_interface_aidl.h  |  7 +++++++
+ system/audio_hal_interface/hal_version_manager.cc     | 11 +++++++++--
+ 3 files changed, 19 insertions(+), 5 deletions(-)
+
+diff --git a/system/audio_hal_interface/aidl/client_interface_aidl.cc b/system/audio_hal_interface/aidl/client_interface_aidl.cc
+index 76e8788d02..bde4c4529c 100644
+--- a/system/audio_hal_interface/aidl/client_interface_aidl.cc
++++ b/system/audio_hal_interface/aidl/client_interface_aidl.cc
+@@ -63,7 +63,7 @@ BluetoothAudioClientInterface::BluetoothAudioClientInterface(
+ 
+ bool BluetoothAudioClientInterface::is_aidl_available() {
+   return AServiceManager_isDeclared(
+-      kDefaultAudioProviderFactoryInterface.c_str());
++      audioProviderFactoryInterface().c_str());
+ }
+ 
+ std::vector<AudioCapabilities>
+@@ -79,7 +79,7 @@ BluetoothAudioClientInterface::GetAudioCapabilities(SessionType session_type) {
+   }
+   auto provider_factory = IBluetoothAudioProviderFactory::fromBinder(
+       ::ndk::SpAIBinder(AServiceManager_waitForService(
+-          kDefaultAudioProviderFactoryInterface.c_str())));
++          audioProviderFactoryInterface().c_str())));
+ 
+   if (provider_factory == nullptr) {
+     LOG(ERROR) << __func__ << ", can't get capability from unknown factory";
+@@ -192,7 +192,7 @@ void BluetoothAudioClientInterface::FetchAudioProvider() {
+   }
+   auto provider_factory = IBluetoothAudioProviderFactory::fromBinder(
+       ::ndk::SpAIBinder(AServiceManager_waitForService(
+-          kDefaultAudioProviderFactoryInterface.c_str())));
++          audioProviderFactoryInterface().c_str())));
+ 
+   if (provider_factory == nullptr) {
+     LOG(ERROR) << __func__ << ", can't get capability from unknown factory";
+diff --git a/system/audio_hal_interface/aidl/client_interface_aidl.h b/system/audio_hal_interface/aidl/client_interface_aidl.h
+index c191e4054e..99d5192376 100644
+--- a/system/audio_hal_interface/aidl/client_interface_aidl.h
++++ b/system/audio_hal_interface/aidl/client_interface_aidl.h
+@@ -27,6 +27,7 @@
+ #include "audio_ctrl_ack.h"
+ #include "bluetooth_audio_port_impl.h"
+ #include "transport_instance.h"
++#include "osi/include/properties.h"
+ 
+ #define BLUETOOTH_AUDIO_HAL_PROP_DISABLED \
+   "persist.bluetooth.bluetooth_audio_hal.disabled"
+@@ -175,6 +176,12 @@ class BluetoothAudioClientInterface {
+   //     "android.hardware.bluetooth.audio.IBluetoothAudioProviderFactory/default";
+   static inline const std::string kDefaultAudioProviderFactoryInterface =
+       std::string() + IBluetoothAudioProviderFactory::descriptor + "/default";
++  static inline const std::string kSystemAudioProviderFactoryInterface =
++      std::string() + IBluetoothAudioProviderFactory::descriptor + "/sysbta";
++  static inline const std::string audioProviderFactoryInterface() {
++   return osi_property_get_bool("persist.bluetooth.system_audio_hal.enabled", false)
++    ? kSystemAudioProviderFactoryInterface : kDefaultAudioProviderFactoryInterface;
++  }
+ 
+  private:
+   IBluetoothTransportInstance* transport_;
+diff --git a/system/audio_hal_interface/hal_version_manager.cc b/system/audio_hal_interface/hal_version_manager.cc
+index 36672cb32c..98f1cdecac 100644
+--- a/system/audio_hal_interface/hal_version_manager.cc
++++ b/system/audio_hal_interface/hal_version_manager.cc
+@@ -26,6 +26,7 @@
+ #include "aidl/audio_aidl_interfaces.h"
+ #include "include/check.h"
+ #include "os/log.h"
++#include "osi/include/properties.h"
+ 
+ namespace bluetooth {
+ namespace audio {
+@@ -35,6 +36,12 @@ using ::aidl::android::hardware::bluetooth::audio::
+ 
+ static const std::string kDefaultAudioProviderFactoryInterface =
+     std::string() + IBluetoothAudioProviderFactory::descriptor + "/default";
++static const std::string kSystemAudioProviderFactoryInterface =
++    std::string() + IBluetoothAudioProviderFactory::descriptor + "/sysbta";
++static inline const std::string& audioProviderFactoryInterface() {
++  return osi_property_get_bool("persist.bluetooth.system_audio_hal.enabled", false)
++    ? kSystemAudioProviderFactoryInterface : kDefaultAudioProviderFactoryInterface;
++}
+ 
+ std::string toString(BluetoothAudioHalTransport transport) {
+   switch (transport) {
+@@ -76,7 +83,7 @@ BluetoothAudioHalVersion GetAidlInterfaceVersion() {
+     int version = 0;
+     auto provider_factory = IBluetoothAudioProviderFactory::fromBinder(
+         ::ndk::SpAIBinder(AServiceManager_waitForService(
+-            kDefaultAudioProviderFactoryInterface.c_str())));
++            audioProviderFactoryInterface().c_str())));
+ 
+     if (provider_factory == nullptr) {
+       LOG_ERROR(
+@@ -146,7 +153,7 @@ HalVersionManager::GetProvidersFactory_2_0() {
+ HalVersionManager::HalVersionManager() {
+   hal_transport_ = BluetoothAudioHalTransport::UNKNOWN;
+   if (AServiceManager_checkService(
+-          kDefaultAudioProviderFactoryInterface.c_str()) != nullptr) {
++          audioProviderFactoryInterface().c_str()) != nullptr) {
+     hal_version_ = GetAidlInterfaceVersion();
+     hal_transport_ = BluetoothAudioHalTransport::AIDL;
+     return;
+
+From f07fdbcc29dfd888709ff8b7c88b458f97ce226b Mon Sep 17 00:00:00 2001
+From: Alberto Ponces <ponces26@gmail.com>
+Date: Thu, 17 Jun 2021 15:48:53 +0100
+Subject: [PATCH 2/4] Add option to change eSCO Transport Unit Size
+
+Fixes Bluetooth calls on some Samsung devices if set to 16.
+
+It's still unknown if other Treble devices need other values so it's preferred to leave this able to be configured with another integer.
+
+This applies to mSBC T2, T1 and CVSD codecs
+
+Change-Id: I3e5897c2ce983042b9a4bef9def6744ba4253bcb
+---
+ system/device/src/esco_parameters.cc | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/system/device/src/esco_parameters.cc b/system/device/src/esco_parameters.cc
+index 15f1397087..21590782a6 100644
+--- a/system/device/src/esco_parameters.cc
++++ b/system/device/src/esco_parameters.cc
+@@ -25,7 +25,8 @@
+ #include "hci/controller_interface.h"
+ #include "main/shim/entry.h"
+ 
+-static const enh_esco_params_t default_esco_parameters[ESCO_NUM_CODECS] = {
++#include <cutils/properties.h>
++static enh_esco_params_t default_esco_parameters[ESCO_NUM_CODECS] = {
+     // CVSD D1
+     {
+         .transmit_bandwidth = TXRX_64KBITS_RATE,
+@@ -352,6 +353,11 @@ enh_esco_params_t esco_parameters_for_codec(esco_codec_t codec, bool offload) {
+     }
+   }
+ 
++  int escoTransportUnitSize = property_get_int32("persist.sys.bt.esco_transport_unit_size", 0);
++  if(escoTransportUnitSize) {
++    default_esco_parameters[codec].input_transport_unit_size = escoTransportUnitSize;
++    default_esco_parameters[codec].output_transport_unit_size = escoTransportUnitSize;
++  }
+   if (offload) {
+     if (codec == ESCO_CODEC_SWB_Q0 || codec == ESCO_CODEC_SWB_Q1 ||
+         codec == ESCO_CODEC_SWB_Q2 || codec == ESCO_CODEC_SWB_Q3) {
+
+From e0f9ca0d9dcf1421223dd17d4b5ad437339fb46e Mon Sep 17 00:00:00 2001
+From: Pierre-Hugues Husson <phh@phh.me>
+Date: Sun, 17 Oct 2021 17:17:13 -0400
+Subject: [PATCH 3/4] Don't abort when failing to get real-time priority
+
+On some devices (like OP6), for unknown reason, trying to go to realtime
+fails with EPERM.
+There is no good reason to actually require real-time, so don't fail
+when we don't get it
+This fixes gabeldorsche on OP6
+Not yet legacy bluetooth stack
+
+Change-Id: Id25dac186628e933185bdfd640498004459b375a
+---
+ system/btif/src/btif_a2dp_sink.cc   |  2 +-
+ system/btif/src/btif_a2dp_source.cc |  2 +-
+ system/osi/src/alarm.cc             | 12 +++++++++++-
+ system/stack/btu/main_thread.cc     |  2 +-
+ 4 files changed, 14 insertions(+), 4 deletions(-)
+
+diff --git a/system/btif/src/btif_a2dp_sink.cc b/system/btif/src/btif_a2dp_sink.cc
+index 8e0083b014..0f6369e205 100644
+--- a/system/btif/src/btif_a2dp_sink.cc
++++ b/system/btif/src/btif_a2dp_sink.cc
+@@ -197,7 +197,7 @@ bool btif_a2dp_sink_init() {
+   /* Schedule the rest of the operations */
+   if (!btif_a2dp_sink_cb.worker_thread.EnableRealTimeScheduling()) {
+ #if defined(__ANDROID__)
+-    log::fatal("Failed to increase A2DP decoder thread priority");
++    log::error("Failed to increase A2DP decoder thread priority");
+ #endif
+   }
+   btif_a2dp_sink_cb.worker_thread.DoInThread(
+diff --git a/system/btif/src/btif_a2dp_source.cc b/system/btif/src/btif_a2dp_source.cc
+index 6b6555ec88..2dcf06dd3e 100644
+--- a/system/btif/src/btif_a2dp_source.cc
++++ b/system/btif/src/btif_a2dp_source.cc
+@@ -374,7 +374,7 @@ static void btif_a2dp_source_startup_delayed() {
+   log::info("state={}", btif_a2dp_source_cb.StateStr());
+   if (!btif_a2dp_source_thread.EnableRealTimeScheduling()) {
+ #if defined(__ANDROID__)
+-    log::fatal("unable to enable real time scheduling");
++    log::error("unable to enable real time scheduling");
+ #endif
+   }
+   if (!bluetooth::audio::a2dp::init(&btif_a2dp_source_thread)) {
+diff --git a/system/osi/src/alarm.cc b/system/osi/src/alarm.cc
+index 408f4f3bee..4b48be24c7 100644
+--- a/system/osi/src/alarm.cc
++++ b/system/osi/src/alarm.cc
+@@ -673,7 +673,17 @@ static bool timer_create_internal(const clockid_t clock_id, timer_t* timer) {
+   sigevent.sigev_notify = SIGEV_THREAD;
+   sigevent.sigev_notify_function = (void (*)(union sigval))timer_callback;
+   sigevent.sigev_notify_attributes = &thread_attr;
+-  if (timer_create(clock_id, &sigevent, timer) == -1) {
++
++  int ret = timer_create(clock_id, &sigevent, timer);
++  if (ret == -1) {
++       LOG_ERROR("%s failed to create timer with RT err %s... Try again without RT", __func__, strerror(errno));
++      // Recreate timer without RT priority
++      memset(&sigevent, 0, sizeof(sigevent));
++      sigevent.sigev_notify = SIGEV_THREAD;
++      sigevent.sigev_notify_function = (void (*)(union sigval))timer_callback;
++      ret = timer_create(clock_id, &sigevent, timer);
++  }
++  if (ret == -1) {
+     LOG_ERROR("%s unable to create timer with clock %d: %s", __func__, clock_id,
+               strerror(errno));
+     if (clock_id == CLOCK_BOOTTIME_ALARM) {
+diff --git a/system/stack/btu/main_thread.cc b/system/stack/btu/main_thread.cc
+index a2cdd7bac6..045cbc3cbd 100644
+--- a/system/stack/btu/main_thread.cc
++++ b/system/stack/btu/main_thread.cc
+@@ -71,7 +71,7 @@ void main_thread_start_up() {
+   }
+   if (!main_thread.EnableRealTimeScheduling()) {
+ #if defined(__ANDROID__)
+-    log::fatal("unable to enable real time scheduling");
++    log::error("unable to enable real time scheduling");
+ #else
+     log::error("unable to enable real time scheduling");
+ #endif
+
+From 041af70cbbb21725c4aee13fc242bcf6d4ee0a53 Mon Sep 17 00:00:00 2001
+From: Andreas Schneider <asn@cryptomilk.org>
+Date: Sat, 12 Nov 2022 00:35:46 +0000
+Subject: [PATCH 4/4] On Samsung devices, we need to tell Audio HAL if we're
+ running narrow band or wide band
+
+Ported to Android 13.
+
+Change-Id: I7802b7a29c017a2cd7018e82772183df1dfa0b89
+---
+ .../com/android/bluetooth/hfp/HeadsetStateMachine.java    | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/android/app/src/com/android/bluetooth/hfp/HeadsetStateMachine.java b/android/app/src/com/android/bluetooth/hfp/HeadsetStateMachine.java
+index 38db4dc656..f764f6aa9d 100644
+--- a/android/app/src/com/android/bluetooth/hfp/HeadsetStateMachine.java
++++ b/android/app/src/com/android/bluetooth/hfp/HeadsetStateMachine.java
+@@ -158,6 +158,7 @@ public class HeadsetStateMachine extends StateMachine {
+     private boolean mHasWbsEnabled = false;
+     private boolean mHasSwbLc3Enabled = false;
+     private boolean mHasSwbAptXEnabled = false;
++    private int mReportScoSampleRate = 0;
+     // AT Phone book keeps a group of states used by AT+CPBR commands
+     @VisibleForTesting
+     final AtPhonebook mPhonebook;
+@@ -277,6 +278,7 @@ public void cleanup() {
+         mHasNrecEnabled = false;
+         mHasSwbLc3Enabled = false;
+         mHasSwbAptXEnabled = false;
++        mReportScoSampleRate = 0;
+     }
+ 
+     public void dump(StringBuilder sb) {
+@@ -518,6 +520,7 @@ public void enter() {
+             mHasSwbLc3Enabled = false;
+             mHasNrecEnabled = false;
+             mHasSwbAptXEnabled = false;
++            mReportScoSampleRate = 0;
+ 
+             broadcastStateTransitions();
+             logFailureIfNeeded();
+@@ -1704,6 +1707,9 @@ private void setAudioParameters() {
+             am.setParameters("bt_swb=" + (mHasSwbAptXEnabled ? "0" : "65535"));
+         }
+         am.setBluetoothHeadsetProperties(getCurrentDeviceName(), mHasNrecEnabled, mHasWbsEnabled);
++        if (mReportScoSampleRate > 0) {
++            am.setParameters("g_sco_samplerate=" + mReportScoSampleRate);
++        }
+     }
+ 
+     @VisibleForTesting
+@@ -1847,10 +1853,12 @@ private void processWBSEvent(int wbsConfig) {
+         switch (wbsConfig) {
+             case HeadsetHalConstants.BTHF_WBS_YES:
+                 mHasWbsEnabled = true;
++                mReportScoSampleRate = 16000;
+                 break;
+             case HeadsetHalConstants.BTHF_WBS_NO:
+             case HeadsetHalConstants.BTHF_WBS_NONE:
+                 mHasWbsEnabled = false;
++                mReportScoSampleRate = 8000;
+                 break;
+             default:
+                 Log.e(TAG, "processWBSEvent: unknown wbsConfig " + wbsConfig);
