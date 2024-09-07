@@ -61,11 +61,11 @@ cd hardware/lineage/interfaces/
 git stash --include-untracked
 croot
 
-# stash any changes from last time and use the new aug 2024 patch file
+# stash any changes from last time and use the sept 2024 patch file
 
 cd .repo/manifests
 git stash --include-untracked
-patch -p1 < ~/Downloads/manifests-aug-2024.patch
+patch -p1 < ~/Downloads/sept-2024-manifests-8976.diff
 croot
 [/code]
 
@@ -88,6 +88,10 @@ Now we have to reapply the UL patches.
 
 cd packages/modules/Bluetooth
 git am ~/Downloads/packages_modules_Bluetooth-aug-2024.patch
+croot
+
+cd frameworks/av
+git am ~/Downloads/frameworks-av-sept-2024.patch
 croot
 
 cd frameworks/base

@@ -1,0 +1,396 @@
+From a437c92076f12f1f5db97e3daa14deaac2ae4430 Mon Sep 17 00:00:00 2001
+From: TARKZiM <tom8476oo@gmail.com>
+Date: Sat, 12 Feb 2022 18:41:32 +0800
+Subject: [PATCH 1/4] libaudiohal: Bring back 2.0 HAL
+
+[TARKZiM] Adapt to 14 QPR3.
+
+Change-Id: I1800712582df740db9f60d29e22cda18c4895a96
+---
+ media/libaudiohal/Android.bp                  |  2 +
+ media/libaudiohal/FactoryHal.cpp              |  4 +-
+ media/libaudiohal/impl/Android.bp             | 52 +++++++++++++++++++
+ media/libaudiohal/impl/DeviceHalHidl.cpp      | 11 ++++
+ .../impl/DevicesFactoryHalHidl.cpp            | 12 +++++
+ 5 files changed, 80 insertions(+), 1 deletion(-)
+
+diff --git a/media/libaudiohal/Android.bp b/media/libaudiohal/Android.bp
+index b8d099897f2..1426930603a 100644
+--- a/media/libaudiohal/Android.bp
++++ b/media/libaudiohal/Android.bp
+@@ -23,6 +23,8 @@ cc_library_shared {
+     ],
+ 
+     required: [
++        "libaudiohal@2.0",
++        "libaudiohal@4.0",
+         "libaudiohal@5.0",
+         "libaudiohal@6.0",
+         "libaudiohal@7.0",
+diff --git a/media/libaudiohal/FactoryHal.cpp b/media/libaudiohal/FactoryHal.cpp
+index 15cb297b5cb..185a2f6b1b8 100644
+--- a/media/libaudiohal/FactoryHal.cpp
++++ b/media/libaudiohal/FactoryHal.cpp
+@@ -50,12 +50,14 @@ using InterfaceName = std::pair<std::string, std::string>;
+  * This list need to keep sync with AudioHalVersionInfo.VERSIONS in
+  * media/java/android/media/AudioHalVersionInfo.java.
+  */
+-static const std::array<AudioHalVersionInfo, 5> sAudioHALVersions = {
++static const std::array<AudioHalVersionInfo, 7> sAudioHALVersions = {
+     AudioHalVersionInfo(AudioHalVersionInfo::Type::AIDL, 1, 0),
+     AudioHalVersionInfo(AudioHalVersionInfo::Type::HIDL, 7, 1),
+     AudioHalVersionInfo(AudioHalVersionInfo::Type::HIDL, 7, 0),
+     AudioHalVersionInfo(AudioHalVersionInfo::Type::HIDL, 6, 0),
+     AudioHalVersionInfo(AudioHalVersionInfo::Type::HIDL, 5, 0),
++    AudioHalVersionInfo(AudioHalVersionInfo::Type::HIDL, 4, 0),
++    AudioHalVersionInfo(AudioHalVersionInfo::Type::HIDL, 2, 0),
+ };
+ 
+ static const std::map<AudioHalVersionInfo::Type, InterfaceName> sDevicesHALInterfaces = {
+diff --git a/media/libaudiohal/impl/Android.bp b/media/libaudiohal/impl/Android.bp
+index 4d81f77d8e1..946a87be157 100644
+--- a/media/libaudiohal/impl/Android.bp
++++ b/media/libaudiohal/impl/Android.bp
+@@ -82,6 +82,58 @@ cc_defaults {
+     ],
+ }
+ 
++cc_library_shared {
++    name: "libaudiohal@2.0",
++    defaults: [
++        "libaudiohal_default",
++        "libaudiohal_hidl_default"
++    ],
++    srcs: [
++        ":audio_core_hal_client_sources",
++        ":audio_effect_hidl_hal_client_sources",
++        "EffectsFactoryHalEntry.cpp",
++    ],
++    shared_libs: [
++        "android.hardware.audio.common@2.0",
++        "android.hardware.audio.common@2.0-util",
++        "android.hardware.audio.effect@2.0",
++        "android.hardware.audio.effect@2.0-util",
++        "android.hardware.audio@2.0",
++        "android.hardware.audio@2.0-util",
++    ],
++    cflags: [
++        "-DMAJOR_VERSION=2",
++        "-DMINOR_VERSION=0",
++        "-include common/all-versions/VersionMacro.h",
++    ]
++}
++
++cc_library_shared {
++    name: "libaudiohal@4.0",
++    defaults: [
++        "libaudiohal_default",
++        "libaudiohal_hidl_default"
++    ],
++    srcs: [
++        ":audio_core_hal_client_sources",
++        ":audio_effect_hidl_hal_client_sources",
++        "EffectsFactoryHalEntry.cpp",
++    ],
++    shared_libs: [
++        "android.hardware.audio.common@4.0",
++        "android.hardware.audio.common@4.0-util",
++        "android.hardware.audio.effect@4.0",
++        "android.hardware.audio.effect@4.0-util",
++        "android.hardware.audio@4.0",
++        "android.hardware.audio@4.0-util",
++    ],
++    cflags: [
++        "-DMAJOR_VERSION=4",
++        "-DMINOR_VERSION=0",
++        "-include common/all-versions/VersionMacro.h",
++    ]
++}
++
+ cc_library_shared {
+     name: "libaudiohal@5.0",
+     defaults: [
+diff --git a/media/libaudiohal/impl/DeviceHalHidl.cpp b/media/libaudiohal/impl/DeviceHalHidl.cpp
+index ea4258c8788..3404d14476d 100644
+--- a/media/libaudiohal/impl/DeviceHalHidl.cpp
++++ b/media/libaudiohal/impl/DeviceHalHidl.cpp
+@@ -608,7 +608,12 @@ status_t DeviceHalHidl::setConnectedState(const struct audio_port_v7 *port, bool
+             result != NO_ERROR) {
+         return result;
+     }
++#if MAJOR_VERSION > 2
+     return processReturn("setConnectedState", mDevice->setConnectedState(hidlAddress, connected));
++#else
++    (void)connected;
++    return NO_ERROR;
++#endif
+ }
+ 
+ error::Result<audio_hw_sync_t> DeviceHalHidl::getHwAvSync() {
+@@ -616,11 +621,17 @@ error::Result<audio_hw_sync_t> DeviceHalHidl::getHwAvSync() {
+     if (mDevice == 0) return NO_INIT;
+     audio_hw_sync_t value;
+     Result result;
++#if MAJOR_VERSION > 2
+     Return<void> ret = mDevice->getHwAvSync([&value, &result](Result r, audio_hw_sync_t v) {
+         value = v;
+         result = r;
+     });
+     RETURN_IF_ERROR(processReturn("getHwAvSync", ret, result));
++#else
++    Return<uint32_t> ret = mDevice->getHwAvSync();
++    (void)result;
++//    RETURN_IF_ERROR(processReturn("getHwAvSync", ret, result));
++#endif
+     return value;
+ }
+ 
+diff --git a/media/libaudiohal/impl/DevicesFactoryHalHidl.cpp b/media/libaudiohal/impl/DevicesFactoryHalHidl.cpp
+index 1cac9dab762..e35f5168986 100644
+--- a/media/libaudiohal/impl/DevicesFactoryHalHidl.cpp
++++ b/media/libaudiohal/impl/DevicesFactoryHalHidl.cpp
+@@ -124,9 +124,20 @@ status_t DevicesFactoryHalHidl::openDevice(const char *name, sp<DeviceHalInterfa
+             // thus openPrimaryDevice must be used.
+ #if MAJOR_VERSION == 7 && MINOR_VERSION == 1
+             ret = factory->openPrimaryDevice_7_1(
++#elif MAJOR_VERSION < 4
++            ret = factory->openDevice(
++                    hidlId,
++                    [&](Result r,
++                        const sp<::android::hardware::audio::CPP_VERSION::IDevice>& result) {
++                        retval = r;
++                        if (retval == Result::OK) {
++                            *device = new DeviceHalHidl(result);
++                        }
++                    });
+ #else
+             ret = factory->openPrimaryDevice(
+ #endif
++#if MAJOR_VERSION > 2
+                     [&](Result r,
+                         const sp<::android::hardware::audio::CPP_VERSION::IPrimaryDevice>& result) {
+                         retval = r;
+@@ -134,6 +145,7 @@ status_t DevicesFactoryHalHidl::openDevice(const char *name, sp<DeviceHalInterfa
+                             *device = new DeviceHalHidl(result);
+                         }
+                     });
++#endif
+         } else {
+ #if MAJOR_VERSION == 7 && MINOR_VERSION == 1
+             ret = factory->openDevice_7_1(
+
+From 52ee85dd823fc0ffe6b31c1217879d86c8dccb74 Mon Sep 17 00:00:00 2001
+From: Pierre-Hugues Husson <phh@phh.me>
+Date: Mon, 5 Aug 2019 18:09:50 +0200
+Subject: [PATCH 2/4] Fix BT in-call on CAF devices
+
+See https://github.com/phhusson/treble_experimentations/issues/374
+
+In Qualcomm's BSP audio_policy_configuration.xml, one route is missing,
+from primary output and telephony to BT SCO.
+
+Add it if we detect telephony and bt sco, but no such route.
+
+Change-Id: Ifea0f88276ec9a0811f3cb1973c4b06f2c82077b
+---
+ .../managerdefinitions/src/Serializer.cpp     | 93 +++++++++++++++++++
+ 1 file changed, 93 insertions(+)
+
+diff --git a/services/audiopolicy/common/managerdefinitions/src/Serializer.cpp b/services/audiopolicy/common/managerdefinitions/src/Serializer.cpp
+index 6f19a7a1459..1ab472f396c 100644
+--- a/services/audiopolicy/common/managerdefinitions/src/Serializer.cpp
++++ b/services/audiopolicy/common/managerdefinitions/src/Serializer.cpp
+@@ -667,6 +667,98 @@ std::variant<status_t, RouteTraits::Element> PolicySerializer::deserialize<Route
+     return route;
+ }
+ 
++static void fixupQualcommBtScoRoute(RouteTraits::Collection& routes, DevicePortTraits::Collection& devicePorts, HwModule* ctx) {
++    // On many Qualcomm devices, there is a BT SCO Headset Mic => primary input mix
++    // But Telephony Rx => BT SCO Headset route is missing
++    // When we detect such case, add the missing route
++
++    // If we have:
++    // <route type="mix" sink="Telephony Tx" sources="voice_tx"/>
++    // <route type="mix" sink="primary input" sources="Built-In Mic,Built-In Back Mic,Wired Headset Mic,BT SCO Headset Mic"/>
++    // <devicePort tagName="BT SCO Headset" type="AUDIO_DEVICE_OUT_BLUETOOTH_SCO_HEADSET" role="sink" />
++    // And no <route type="mix" sink="BT SCO Headset" />
++
++    // Add:
++    // <route type="mix" sink="BT SCO Headset" sources="primary output,deep_buffer,compressed_offload,Telephony Rx"/>
++    bool foundBtScoHeadsetDevice = false;
++    for(const auto& device: devicePorts) {
++        if(device->getTagName() == "BT SCO Headset") {
++            foundBtScoHeadsetDevice = true;
++            break;
++        }
++    }
++    if(!foundBtScoHeadsetDevice) {
++        ALOGE("No BT SCO Headset device found, don't patch policy");
++        return;
++    }
++
++    bool foundTelephony = false;
++    bool foundBtScoInput = false;
++    bool foundScoHeadsetRoute = false;
++    for(const auto& route: routes) {
++        ALOGE("Looking at route %d\n", route->getType());
++        if(route->getType() != AUDIO_ROUTE_MIX)
++            continue;
++        auto sink = route->getSink();
++        ALOGE("... With sink %s\n", sink->getTagName().c_str());
++        if(sink->getTagName() == "Telephony Tx") {
++            foundTelephony = true;
++            continue;
++        }
++        if(sink->getTagName() == "BT SCO Headset") {
++            foundScoHeadsetRoute = true;
++            break;
++        }
++        for(const auto& source: route->getSources()) {
++            ALOGE("... With source %s\n", source->getTagName().c_str());
++            if(source->getTagName() == "BT SCO Headset Mic") {
++                foundBtScoInput = true;
++                break;
++            }
++        }
++    }
++    //The route we want to add is already there
++    ALOGE("Done looking for existing routes");
++    if(foundScoHeadsetRoute)
++        return;
++
++    ALOGE("No existing route found... %d %d", foundTelephony ? 1 : 0, foundBtScoInput ? 1 : 0);
++    //We couldn't find the routes we assume are required for the function we want to add
++    if(!foundTelephony || !foundBtScoInput)
++        return;
++    ALOGE("Adding our own.");
++
++    // Add:
++    // <route type="mix" sink="BT SCO Headset" sources="primary output,deep_buffer,compressed_offload,Telephony Rx"/>
++    AudioRoute *newRoute = new AudioRoute(AUDIO_ROUTE_MIX);
++
++    auto sink = ctx->findPortByTagName("BT SCO Headset");
++    ALOGE("Got sink %p\n", sink.get());
++    newRoute->setSink(sink);
++
++    Vector<sp<PolicyAudioPort>> sources;
++    for(const auto& sourceName: {
++            "primary output",
++            "deep_buffer",
++            "compressed_offload",
++            "Telephony Rx"
++            }) {
++        auto source = ctx->findPortByTagName(sourceName);
++        ALOGE("Got source %p\n", source.get());
++        if (source.get() != nullptr) {
++            sources.add(source);
++            source->addRoute(newRoute);
++        }
++    }
++
++    newRoute->setSources(sources);
++
++    sink->addRoute(newRoute);
++
++    auto ret = routes.add(newRoute);
++    ALOGE("route add returned %zd", ret);
++}
++
+ template<>
+ std::variant<status_t, ModuleTraits::Element> PolicySerializer::deserialize<ModuleTraits>(
+         const xmlNode *cur, ModuleTraits::PtrSerializingCtx ctx)
+@@ -714,6 +806,7 @@ std::variant<status_t, ModuleTraits::Element> PolicySerializer::deserialize<Modu
+     if (status != NO_ERROR) {
+         return status;
+     }
++    fixupQualcommBtScoRoute(routes, devicePorts, module.get());
+     module->setRoutes(routes);
+ 
+     for (const xmlNode *children = cur->xmlChildrenNode; children != NULL;
+
+From 9f7c7b310666c2cd0b2a912187da69049c7201a2 Mon Sep 17 00:00:00 2001
+From: Pierre-Hugues Husson <phh@phh.me>
+Date: Mon, 13 Apr 2020 21:01:16 +0200
+Subject: [PATCH 3/4] There are three SCO devices. Fallback from one to the
+ others if needed
+
+Change-Id: I414dcb6b154855c00cb8520b23dc1069827864b2
+---
+ .../managerdefinitions/src/HwModule.cpp       | 21 +++++++++++++++++++
+ 1 file changed, 21 insertions(+)
+
+diff --git a/services/audiopolicy/common/managerdefinitions/src/HwModule.cpp b/services/audiopolicy/common/managerdefinitions/src/HwModule.cpp
+index 6696b45f032..3ea185d8737 100644
+--- a/services/audiopolicy/common/managerdefinitions/src/HwModule.cpp
++++ b/services/audiopolicy/common/managerdefinitions/src/HwModule.cpp
+@@ -321,6 +321,27 @@ sp<HwModule> HwModuleCollection::getModuleForDeviceType(audio_devices_t type,
+             }
+         }
+     }
++    //We didn't find one? Ok but all SCOs are equivalent surely?
++    if(type == AUDIO_DEVICE_OUT_BLUETOOTH_SCO ||
++        type == AUDIO_DEVICE_OUT_BLUETOOTH_SCO_HEADSET ||
++        type == AUDIO_DEVICE_OUT_BLUETOOTH_SCO_CARKIT) {
++        ALOGE("Fallback SCO");
++        if(type != AUDIO_DEVICE_OUT_BLUETOOTH_SCO) {
++            auto ret = getModuleForDeviceType(AUDIO_DEVICE_OUT_BLUETOOTH_SCO, encodedFormat);
++            ALOGE("Fallback SCO simple? %s", (ret != nullptr) ? "yes" : "no");
++            if(ret != nullptr) return ret;
++        }
++        if(type != AUDIO_DEVICE_OUT_BLUETOOTH_SCO_HEADSET) {
++            auto ret = getModuleForDeviceType(AUDIO_DEVICE_OUT_BLUETOOTH_SCO_HEADSET, encodedFormat);
++            ALOGE("Fallback SCO headset? %s", (ret != nullptr) ? "yes" : "no");
++            if(ret != nullptr) return ret;
++        }
++        if(type != AUDIO_DEVICE_OUT_BLUETOOTH_SCO_CARKIT) {
++            auto ret = getModuleForDeviceType(AUDIO_DEVICE_OUT_BLUETOOTH_SCO_CARKIT, encodedFormat);
++            ALOGE("Fallback SCO carkit? %s", (ret != nullptr) ? "yes" : "no");
++            if(ret != nullptr) return ret;
++        }
++    }
+     return nullptr;
+ }
+ 
+
+From d55c2043bc8764774c24c856144dacd0a3ef4379 Mon Sep 17 00:00:00 2001
+From: Arne Coucheron <arco68@gmail.com>
+Date: Sat, 4 Jan 2020 10:32:23 +0100
+Subject: [PATCH 4/4] Enable legacy adaptive playback for QCOM_BSP_LEGACY
+
+Adaptive playback got broken in Q, and this is needed
+to fix issues with video playback in apps like YouTube etc.
+
+Change-Id: Ieb440b93222e67043eb5ceda50c0b5eea3198695
+---
+ media/libstagefright/omx/Android.bp          | 1 +
+ media/libstagefright/omx/OMXNodeInstance.cpp | 4 ++++
+ 2 files changed, 5 insertions(+)
+
+diff --git a/media/libstagefright/omx/Android.bp b/media/libstagefright/omx/Android.bp
+index 79ab009ffb8..346f40f1978 100644
+--- a/media/libstagefright/omx/Android.bp
++++ b/media/libstagefright/omx/Android.bp
+@@ -19,6 +19,7 @@ license {
+ 
+ cc_library_shared {
+     name: "libstagefright_omx",
++    defaults: ["stagefright_qcom_legacy_defaults"],
+     vendor_available: true,
+     vndk: {
+         enabled: true,
+diff --git a/media/libstagefright/omx/OMXNodeInstance.cpp b/media/libstagefright/omx/OMXNodeInstance.cpp
+index 959f43e713c..6d07b5435f5 100644
+--- a/media/libstagefright/omx/OMXNodeInstance.cpp
++++ b/media/libstagefright/omx/OMXNodeInstance.cpp
+@@ -473,7 +473,11 @@ OMXNodeInstance::OMXNodeInstance(
+     mGraphicBufferEnabled[0] = false;
+     mGraphicBufferEnabled[1] = false;
+     mIsSecure = AString(name).endsWith(".secure");
++#ifdef QCOM_BSP_LEGACY
++    mLegacyAdaptiveExperiment = true;
++#else
+     mLegacyAdaptiveExperiment = ADebug::isExperimentEnabled("legacy-adaptive");
++#endif
+ }
+ 
+ OMXNodeInstance::~OMXNodeInstance() {
