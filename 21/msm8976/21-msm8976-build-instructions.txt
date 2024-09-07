@@ -107,7 +107,7 @@ git am ~/Downloads/hardware_interfaces-aug-2024.patch
 croot
 
 cd vendor/lineage
-patch -p1 < ~/Downloads/vendor_lineage.diff
+patch -p1 < ~/Downloads/vendor_lineage-sept-2024.diff
 patch -p1 < ~/Downloads/vendor_lineage_skip_abi_checks.patch
 croot
 
