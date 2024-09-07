@@ -1,0 +1,107 @@
+If you don't want to wait, here are the instructions on how to make Sept 5th security patches and possibly beyond.
+
+These instructions WILL CHANGE month to month.
+
+1. setup build environment
+
+[code=bash]
+. build/envsetup.sh
+[/code]
+
+2. The Sept 5th patches are at
+
+https://review.lineageos.org/q/topic:%22T_asb_2024-09%22
+
+As you can see, 8 repos were modified. The number of repos changed will vary month to month obviously depending on the security patches.
+
+If we take a look at
+
+https://github.com/orgs/LineageOS-UL/repositories
+
+5 repos (system/sepolicy, packages/modules/Bluetooth, hardware/interfaces, frameworks/av and frameworks/base) were forked.
+
+Since UL repos have not been updated in a few months now, we will stop using the UL repos and use the original LineageOS repos and apply the UL patches manually via git am command.  Thus, we need to change our .repo/manifests default.xml and snippets/losul.xml
+files to reflect the above.
+
+[code=bash]
+cd .repo/manifests
+# stash any changes from last time and use the aug 2024 patch file
+# For Sept 2024, we don't need to change anything and can reuse the Aug 2024 patch file
+git stash
+patch -p1 < ~/Downloads/manifests-aug-2024.patch
+croot
+[/code]
+
+3. repo sync everything and manually pick the Sept 5th patches since they haven't been merged yet.
+
+[code=bash]
+repo sync --force-sync
+repopick -t T_asb_2024-09
+#  Note the above will stop at 401157 with the following error message
+
+# Applying change number 401157...
+# ERROR: For 401157, could not determine the project path for project LineageOS/android_system_sepolicy
+
+# That is fine, we will apply 401157 later on in step 4 with system_sepolicy-sept-2024-401157.patch
+
+# Finish the repopick topic with last change
+repopick 401163
+[/code]
+
+4. Now we have to apply the UL patches to these 5 forked repos above.
+
+All UL patches can be found at (starting Sept 2024)
+
+https://github.com/retiredtab/LineageOS-build-manifests/tree/main/20/UL-patches-2024
+
+[code=bash]
+# Reapply UL patches below
+
+cd system/sepolicy
+git am ~/Downloads/system_sepolicy-sept-2024-401157.patch
+croot
+
+cd packages/modules/Bluetooth
+git am ~/Downloads/packages_modules_Bluetooth-july-2024.patch
+croot
+
+cd frameworks/base
+git am ~/Downloads/frameworks-base-june-2024.patch
+croot
+
+# get rid of the *.orig files created by git am
+# This is needed so the stupid compiler doesn't complain about it with the message below
+# error: invalid file path
+# these files existing on mine build system, but not necessarily on yours?
+
+rm frameworks/base/core/res/res/values/config.xml.orig
+rm frameworks/base/core/res/res/values/symbols.xml.orig
+
+cd hardware/interfaces
+git am ~/Downloads/hardware_interfaces_aug-2024.patch
+croot
+
+cd frameworks/av
+git am ~/Downloads/frameworks_av-aug-2024.patch 
+croot
+[/code]
+
+
+5. # for samsung_slsi libfimg4x: Fix a -Wunreachable-code-loop-increment compilation error
+
+[code=bash]
+repopick -f 331661
+[/code]
+
+6. # Verify MPPthread patch exists.
+
+[code=bash]
+cd hardware/samsung_slsi/exynos
+git diff
+# If patch exists, there's no need to do the below
+patch -p1 < ~/Downloads/remove-MPPThread.patch
+# go back to top
+croot
+[/code]
+
+7. Breakfast and Brunch as usual.
