@@ -1,0 +1,66 @@
+LineageOS/AOSP stopped LineageOS 18.1/Android 11 security patches Feb 2024.
+
+These are instructions on how to make the unofficial patches starting with March 2024.
+
+Building 18.1 with sept 5th, 2024 patches.
+
+1. . build/envsetup.up
+
+2. # stash our changes
+
+cd packages/modules/NetworkStack
+git stash --include-untracked
+croot
+
+cd build/core
+git stash --include-untracked
+croot
+
+3. # sync
+
+cd .repo/repo
+git pull
+croot
+repo sync --force-sync
+
+4. repopick -t R_asb_2024-03
+
+5. repopick -t R_asb_2024-04
+
+6. # need to sync to LineageOS branch of external/sonivox/
+
+repopick 392208
+
+cp  android/default.xml .repo/manifests/default.xml
+repo sync --force-sync external/sonivox/
+
+7. repopick -t R_asb_2024-05
+
+8. # need to sync to LineageOS branch of system/libfmq
+
+repopick 399744
+
+cp  android/default.xml .repo/manifests/default.xml
+repo sync --force-sync system/libfmq
+
+9. repopick -t R_asb_2024-06
+
+10. repopick -t R_asb_2024-07
+
+11. repopick -t R_asb_2024-08
+
+12. repopick -t R_asb_2024-09
+
+13. # Add TCPIP socket patch
+
+cd packages/modules/NetworkStack
+patch -p1 < ~/Downloads/'TcpSocketTracker: Opt-out for TCP info parsing on legacy.patch'
+croot
+
+14. # bump security string to Sept 2024
+
+cd build/core
+patch -p1 < /Downloads/bump-string-sept.diff
+croot
+
+15. breakfast/brunch as usual
