@@ -4,7 +4,7 @@ These are instructions on how to make the unofficial patches starting with March
 
 Building 18.1 with sept 5th, 2024 patches.
 
-1. . build/envsetup.up
+1. . build/envsetup.sh
 
 2. # stash our changes
 
