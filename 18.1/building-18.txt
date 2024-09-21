@@ -60,7 +60,7 @@ croot
 14. # bump security string to Sept 2024
 
 cd build/core
-patch -p1 < /Downloads/bump-string-sept.diff
+patch -p1 < ~/Downloads/bump-string-sept.diff
 croot
 
 15. breakfast/brunch as usual
