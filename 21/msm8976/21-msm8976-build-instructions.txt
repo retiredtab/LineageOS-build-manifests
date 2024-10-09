@@ -65,7 +65,7 @@ croot
 
 cd .repo/manifests
 git stash --include-untracked
-patch -p1 < ~/Downloads/sept-2024-manifests-8976.diff
+patch -p1 < ~/Downloads/oct-2024-manifests-8976.diff
 croot
 [/code]
 

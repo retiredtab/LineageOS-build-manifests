@@ -1,0 +1,152 @@
+diff --git a/default.xml b/default.xml
+index 83dacca..a22dc77 100644
+--- a/default.xml
++++ b/default.xml
+@@ -11,7 +11,7 @@
+   <remote  name="aosp"
+            fetch="https://android.googlesource.com"
+            review="android-review.googlesource.com"
+-           revision="refs/tags/android-14.0.0_r55" />
++           revision="refs/tags/android-14.0.0_r67" />
+ 
+   <default revision="refs/heads/lineage-21.0"
+            remote="github"
+@@ -24,12 +24,12 @@
+            sync-j="4"
+            revision="refs/heads/lineage-21.0" />
+ 
+-  <superproject name="platform/superproject" remote="aosp" revision="android-14.0.0_r55" />
++  <superproject name="platform/superproject" remote="aosp" revision="android-14.0.0_r67" />
+   <contactinfo bugurl="go/repo-bug" />
+ 
+   <!-- AOSP Projects -->
+ 
+-  <project path="build/make" name="LineageOS-UL/android_build" groups="pdk,sysui-studio" >
++  <project path="build/make" name="LineageOS/android_build" groups="pdk,sysui-studio" >
+     <linkfile src="CleanSpec.mk" dest="build/CleanSpec.mk" />
+     <linkfile src="buildspec.mk.default" dest="build/buildspec.mk.default" />
+     <linkfile src="core" dest="build/core" />
+@@ -45,7 +45,7 @@
+   <project path="build/bazel_common_rules" name="platform/build/bazel_common_rules" groups="pdk" remote="aosp" />
+   <project path="build/blueprint" name="platform/build/blueprint" groups="pdk,tradefed" remote="aosp" />
+   <project path="build/pesto" name="platform/build/pesto" groups="pdk" remote="aosp" />
+-  <project path="build/release" name="platform/build/release" groups="pdk,tradefed" remote="aosp" />
++  <project path="build/release" name="LineageOS/android_build_release" groups="pdk,tradefed" />
+   <project path="build/soong" name="LineageOS-UL/android_build_soong" groups="pdk,tradefed" >
+     <linkfile src="root.bp" dest="Android.bp" />
+     <linkfile src="bootstrap.bash" dest="bootstrap.bash" />
+@@ -875,8 +875,8 @@
+   <project path="external/zstd" name="LineageOS/android_external_zstd" />
+   <project path="external/zucchini" name="platform/external/zucchini" groups="pdk" remote="aosp" />
+   <project path="external/zxing" name="platform/external/zxing" groups="pdk" remote="aosp" />
+-  <!--<project path="frameworks/av" name="LineageOS/android_frameworks_av" groups="pdk" />-->
+-  <!--<project path="frameworks/base" name="LineageOS/android_frameworks_base" groups="pdk-cw-fs,pdk-fs,sysui-studio" />-->
++  <project path="frameworks/av" name="LineageOS/android_frameworks_av" groups="pdk" />
++  <project path="frameworks/base" name="LineageOS/android_frameworks_base" groups="pdk-cw-fs,pdk-fs,sysui-studio" />
+   <project path="frameworks/compile/libbcc" name="platform/frameworks/compile/libbcc" groups="pdk" remote="aosp" />
+   <project path="frameworks/compile/mclinker" name="platform/frameworks/compile/mclinker" groups="pdk" remote="aosp" />
+   <project path="frameworks/compile/slang" name="platform/frameworks/compile/slang" groups="pdk" remote="aosp" />
+@@ -891,7 +891,7 @@
+   <project path="frameworks/libs/systemui" name="LineageOS/android_frameworks_libs_systemui" groups="pdk-cw-fs,pdk-fs,sysui-studio" />
+   <project path="frameworks/minikin" name="platform/frameworks/minikin" groups="pdk-cw-fs,pdk-fs" remote="aosp" />
+   <project path="frameworks/multidex" name="platform/frameworks/multidex" groups="pdk-cw-fs,pdk-fs" remote="aosp" />
+-  <!--<project path="frameworks/native" name="LineageOS/android_frameworks_native" groups="pdk" />-->
++  <project path="frameworks/native" name="LineageOS/android_frameworks_native" groups="pdk" />
+   <project path="frameworks/opt/bitmap" name="platform/frameworks/opt/bitmap" groups="pdk-fs" remote="aosp" />
+   <project path="frameworks/opt/calendar" name="LineageOS/android_frameworks_opt_calendar" groups="pdk-cw-fs,pdk-fs" />
+   <project path="frameworks/opt/car/services" name="platform/frameworks/opt/car/services" groups="pdk-cw-fs,pdk-fs" remote="aosp" />
+@@ -929,7 +929,7 @@
+   <project path="hardware/google/pixel" name="LineageOS/android_hardware_google_pixel" groups="generic_fs,pixel" />
+   <project path="hardware/google/pixel-sepolicy" name="LineageOS/android_hardware_google_pixel-sepolicy" groups="generic_fs,pixel" />
+   <project path="hardware/google/trusty" name="platform/hardware/google/trusty" groups="pdk" remote="aosp" />
+-  <!--<project path="hardware/interfaces" name="LineageOS/android_hardware_interfaces" groups="pdk,sysui-studio" />-->
++  <project path="hardware/interfaces" name="LineageOS/android_hardware_interfaces" groups="pdk,sysui-studio" />
+   <project path="hardware/invensense" name="platform/hardware/invensense" groups="invensense,pdk" remote="aosp" />
+   <project path="hardware/knowles/athletico/sound_trigger_hal" name="platform/hardware/knowles/athletico/sound_trigger_hal" groups="coral,generic_fs" remote="aosp" />
+   <project path="hardware/libhardware" name="LineageOS/android_hardware_libhardware" groups="pdk" />
+@@ -1000,7 +1000,7 @@
+   <project path="kernel/prebuilts/common-modules/virtual-device/mainline/arm64" name="kernel/prebuilts/common-modules/virtual-device/mainline/arm64" groups="pdk" clone-depth="1" remote="aosp" />
+   <project path="kernel/prebuilts/common-modules/virtual-device/mainline/x86-64" name="kernel/prebuilts/common-modules/virtual-device/mainline/x86-64" groups="pdk" clone-depth="1" remote="aosp" />
+   <project path="kernel/tests" name="kernel/tests" groups="vts,pdk" remote="aosp" />
+-  <project path="libcore" name="platform/libcore" groups="pdk" remote="aosp" />
++  <project path="libcore" name="LineageOS/android_libcore" groups="pdk" />
+   <project path="libnativehelper" name="platform/libnativehelper" groups="pdk" remote="aosp" />
+   <project path="packages/apps/BasicSmsReceiver" name="platform/packages/apps/BasicSmsReceiver" groups="pdk-cw-fs,pdk-fs" remote="aosp" />
+   <project path="packages/apps/Browser2" name="platform/packages/apps/Browser2" groups="pdk-fs" remote="aosp" />
+@@ -1068,7 +1068,7 @@
+   <project path="packages/modules/AdServices" name="platform/packages/modules/AdServices" groups="pdk-cw-fs,pdk-fs,sysui-studio" remote="aosp" />
+   <project path="packages/modules/AppSearch" name="platform/packages/modules/AppSearch" groups="pdk" remote="aosp" />
+   <project path="packages/modules/ArtPrebuilt" name="platform/packages/modules/ArtPrebuilt" groups="pdk" clone-depth="1" remote="aosp" />
+-  <!--<project path="packages/modules/Bluetooth" name="LineageOS/android_packages_modules_Bluetooth" groups="pdk" />-->
++  <project path="packages/modules/Bluetooth" name="LineageOS/android_packages_modules_Bluetooth" groups="pdk" />
+   <project path="packages/modules/CaptivePortalLogin" name="platform/packages/modules/CaptivePortalLogin" groups="pdk-cw-fs,pdk-fs" remote="aosp" />
+   <project path="packages/modules/CellBroadcastService" name="platform/packages/modules/CellBroadcastService" groups="pdk" remote="aosp" />
+   <project path="packages/modules/common" name="LineageOS/android_packages_modules_common" groups="pdk-cw-fs,pdk-fs" />
+@@ -1083,7 +1083,7 @@
+   <project path="packages/modules/Gki" name="platform/packages/modules/Gki" groups="pdk-cw-fs,pdk-fs" remote="aosp" />
+   <project path="packages/modules/HealthFitness" name="platform/packages/modules/HealthFitness" groups="pdk-cw-fs,pdk-fs" remote="aosp" />
+   <project path="packages/modules/ImsMedia" name="platform/packages/modules/ImsMedia" groups="pdk" remote="aosp" />
+-  <project path="packages/modules/IntentResolver" name="platform/packages/modules/IntentResolver" groups="pdk,sysui-studio" remote="aosp" />
++  <project path="packages/modules/IntentResolver" name="LineageOS/android_packages_modules_IntentResolver" groups="pdk,sysui-studio" />
+   <project path="packages/modules/IPsec" name="platform/packages/modules/IPsec" groups="pdk" remote="aosp" />
+   <project path="packages/modules/Media" name="platform/packages/modules/Media" groups="pdk" remote="aosp" />
+   <project path="packages/modules/ModuleMetadata" name="platform/packages/modules/ModuleMetadata" groups="pdk" remote="aosp" />
+diff --git a/snippets/lineage.xml b/snippets/lineage.xml
+index 98d3e41..d0d0449 100644
+--- a/snippets/lineage.xml
++++ b/snippets/lineage.xml
+@@ -56,7 +56,7 @@
+   <project path="prebuilts/extract-tools" name="LineageOS/android_prebuilts_extract-tools" clone-depth="1" />
+   <project path="tools/extract-utils" name="LineageOS/android_tools_extract-utils" />
+   <project path="vendor/crowdin" name="LineageOS/android_vendor_crowdin" />
+-  <!--<project path="vendor/lineage" name="LineageOS/android_vendor_lineage" />-->
++  <project path="vendor/lineage" name="LineageOS/android_vendor_lineage" />
+ 
+   <!-- Legacy AOSP additions -->
+   <project path="external/tinyxml" name="platform/external/tinyxml" groups="pdk" remote="aosp" revision="refs/tags/android-11.0.0_r46" />
+diff --git a/snippets/losul.xml b/snippets/losul.xml
+index 8c54a06..8062abf 100644
+--- a/snippets/losul.xml
++++ b/snippets/losul.xml
+@@ -16,17 +16,17 @@
+   <project path="external/perfetto" name="LineageOS-UL/android_external_perfetto" remote="losul" />
+   <project path="external/wpa_supplicant_8" name="LineageOS-UL/android_external_wpa_supplicant_8" remote="losul" />
+   
+-  <project path="frameworks/av" name="LineageOS-UL/android_frameworks_av" remote="losul" />
+-  <project path="frameworks/base" name="LineageOS-UL/android_frameworks_base" remote="losul" />
++  <!-- <project path="frameworks/av" name="LineageOS-UL/android_frameworks_av" remote="losul" /> -->
++  <!-- <project path="frameworks/base" name="LineageOS-UL/android_frameworks_base" remote="losul" /> -->
+   <project path="frameworks/ex" name="LineageOS-UL/android_frameworks_ex" groups="pdk-cw-fs,pdk-fs" remote="losul" />
+-  <project path="frameworks/native" name="LineageOS-UL/android_frameworks_native" remote="losul" />
++  <!-- <project path="frameworks/native" name="LineageOS-UL/android_frameworks_native" remote="losul" /> -->
+   <project path="frameworks/opt/telephony" name="LineageOS-UL/android_frameworks_opt_telephony" remote="losul" />
+   <project path="frameworks/opt/net/wifi" name="LineageOS-UL/android_frameworks_opt_net_wifi" remote="losul" />
+   
+   <project path="hardware/libhardware_legacy" name="LineageOS-UL/android_hardware_libhardware_legacy" remote="losul" />
+ 
+   <project path="hardware/broadcom/nfc" name="LineageOS-UL/android_hardware_broadcom_nfc" remote="losul" />
+-  <project path="hardware/interfaces" name="LineageOS-UL/android_hardware_interfaces" remote="losul" />
++  <!-- <project path="hardware/interfaces" name="LineageOS-UL/android_hardware_interfaces" remote="losul" /> -->
+   <project path="hardware/lineage/interfaces" name="LineageOS-UL/android_hardware_lineage_interfaces" remote="losul" />
+   <project path="hardware/ril" name="LineageOS-UL/android_hardware_ril" remote="losul" />
+   <project path="hardware/qcom/audio" name="LineageOS-UL/android_hardware_qcom_audio" groups="qcom,qcom_audio,pdk-qcom" remote="losul" />
+@@ -86,8 +86,8 @@
+   <project path="hardware/qcom-caf/msm8994/media" name="LineageOS-UL/android_hardware_qcom_media" groups="qcom,pdk-qcom" revision="lineage-21.0-caf-msm8994" />
+ 
+   <project path="packages/apps/Nfc" name="LineageOS-UL/android_packages_apps_Nfc" remote="losul" />
+-  <project path="packages/modules/adb" name="LineageOS-UL/android_packages_modules_adb" remote="losul" />
+-  <project path="packages/modules/Bluetooth" name="LineageOS-UL/android_packages_modules_Bluetooth" remote="losul" />
++  <project path="packages/modules/adb" name="LineageOS-UL/android_packages_modules_adb" remote="losul" revision="lineage-21.0-qpr1" />
++  <!-- <project path="packages/modules/Bluetooth" name="LineageOS-UL/android_packages_modules_Bluetooth" remote="losul" /> -->
+   <project path="packages/modules/Connectivity" name="LineageOS-UL/android_packages_modules_Connectivity" remote="losul" />
+   <project path="packages/modules/DeviceLock" name="LineageOS-UL/android_packages_modules_DeviceLock" groups="pdk-cw-fs,pdk-fs" remote="losul" />
+   <project path="packages/modules/DnsResolver" name="LineageOS-UL/android_packages_modules_DnsResolver" groups="pdk-cw-fs,pdk-fs" remote="losul" />
+@@ -106,7 +106,7 @@
+   <project path="system/sepolicy" name="LineageOS-UL/android_system_sepolicy" remote="losul" />
+   <project path="system/tools/dtbtool" name="LineageOS-UL/android_system_tools_dtbtool" remote="losul" />
+    
+-  <project path="vendor/lineage" name="LineageOS-UL/android_vendor_lineage" remote="losul" />
++  <!-- <project path="vendor/lineage" name="LineageOS-UL/android_vendor_lineage" remote="losul" /> -->
+   <project path="vendor/qcom/opensource/power" name="LineageOS-UL/android_vendor_qcom_opensource_power" groups="qcom,waipio-vendor" remote="losul" />
+  
+ </manifest>
