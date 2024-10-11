@@ -1,0 +1,87 @@
+## Instructions to build Oct 5th 2024 security patches
+
+# cd into your code directory
+
+cd code
+
+# Setup env
+. build/envsetup.sh
+
+# Get latest git binary
+cd .repo/repo/
+git pull
+
+# Save last month's manifest
+cd ../manifests
+git diff > ~/oct-manifest.diff
+
+# Now stash our changes otherwise repo sync will complain about unsaved changes
+git stash
+croot
+
+# Sync just android repo to get latest default.xml
+repo sync --force-sync androidhttps://review.lineageos.org/c/LineageOS/android_build/+/401390
+
+# Restore our manifest changes
+cd .repo/manifests
+patch -p1 < ~/oct-manifest.diff
+croot
+
+# Stash our changes from last month
+
+cd packages/modules/Bluetooth
+git stash --include-untracked
+croot
+
+cd frameworks/base
+git stash --include-untracked
+croot
+
+cd hardware/interfaces
+git stash --include-untracked
+croot
+
+cd frameworks/av
+git stash --include-untracked
+croot
+
+# Start full sync
+repo sync --force-sync
+
+# repopick Oct 5 security patches
+repopick -t T_asb_2024-10
+
+# Now re-apply all our LineageOS-UL patches
+
+cd packages/modules/Bluetooth
+git am ~/Downloads/packages_modules_Bluetooth-july-2024.patch
+croot
+
+cd frameworks/base
+git am ~/Downloads/frameworks-base-june-2024.patch
+croot
+
+cd hardware/interfaces
+git am ~/Downloads/hardware_interfaces_aug-2024.patch
+croot
+
+cd frameworks/av
+git am ~/Downloads/frameworks_av-aug-2024.patch 
+croot
+
+# Now apply all device specific patches
+
+# for samsung_slsi libfimg4x: Fix a -Wunreachable-code-loop-increment compilation error
+
+repopick -f 331661
+
+# Verify MPPthread patch exists.
+
+cd hardware/samsung_slsi/exynos
+git diff
+# If patch exists, there's no need to do the below
+patch -p1 < ~/Downloads/remove-MPPThread.patch
+# go back to top
+croot
+
+# Breakfast and Brunch as usual.
