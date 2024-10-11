@@ -20,7 +20,7 @@ git stash
 croot
 
 # Sync just android repo to get latest default.xml
-repo sync --force-sync androidhttps://review.lineageos.org/c/LineageOS/android_build/+/401390
+repo sync --force-sync android
 
 # Restore our manifest changes
 cd .repo/manifests
