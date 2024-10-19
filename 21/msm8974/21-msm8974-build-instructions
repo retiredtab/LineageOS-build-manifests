@@ -11,17 +11,24 @@ the .repo/local_manifests directory
 3. Git stash our changes and then reapply later on after full repo sync
 
 # cd into your 21 code directory
+
+. build/envsetup.sh
+
 cd packages/modules/Bluetooth
 git stash --include-untracked
-cd ../../..
+croot
 
 cd hardware/qcom-caf/wlan
 git stash --include-untracked
-cd ../../..
+croot
 
 cd frameworks/opt/net/wifi
 git stash --include-untracked
-cd ../../../..
+croot
+
+cd system/vold
+git stash --include-untracked
+croot
 
 4. repo sync everything
 repo sync -c -j$(nproc --all) --force-sync --no-clone-bundle --no-tags
@@ -30,20 +37,26 @@ repo sync -c -j$(nproc --all) --force-sync --no-clone-bundle --no-tags
 
 cd packages/modules/Bluetooth
 patch -p1 < ~/Downloads/packages_modules_Bluetooth.diff
-cd ../../..
+croot
 
 6. Patch to fix wifi compiler error
 
 cd hardware/qcom-caf/wlan
 patch -p1 < ~/Downloads/hardware_qcom-caf_wlan.diff
-cd ../../..
+croot
 
 7. Patch frameworks/opt/net/wifi for wifi compiler erros
 
 cd frameworks/opt/net/wifi
 patch -p1 < ~/Downloads/frameworks_opt_net_wifi.diff
-cd ../../../..
+croot
 
-8. breakfast mondrianwifi
+8. Patch system/vold
+cd system/vold
+patch -p1 < ~/Downloads/system_vold_remove_time_offset.diff
+croot
 
-9. brunch mondrianwifi
+
+9. breakfast mondrianwifi
+
+10. brunch mondrianwifi
