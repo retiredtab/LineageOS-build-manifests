@@ -65,7 +65,7 @@ croot
 
 cd .repo/manifests
 git stash --include-untracked
-patch -p1 < ~/Downloads/oct-2024-manifests-8976.diff
+patch -p1 < ~/Downloads/nov-2024-manifests.patch
 croot
 [/code]
 
@@ -87,38 +87,38 @@ Now we have to reapply the UL patches.
 # Reapply UL patches below
 
 cd packages/modules/Bluetooth
-git am ~/Downloads/packages_modules_Bluetooth-aug-2024.patch
+git am ~/Downloads/21-ul/packages_modules_Bluetooth-aug-2024.patch
 croot
 
 cd frameworks/av
-git am ~/Downloads/frameworks-av-sept-2024.patch
+git am ~/Downloads/21-ul/frameworks-av-sept-2024.patch
 croot
 
 cd frameworks/base
-git am ~/Downloads/frameworks-base-aug-2024.patch
+git am ~/Downloads/21-ul/frameworks-base-aug-2024.patch
 croot
 
 cd frameworks/native
-git am ~/Downloads/frameworks-native-aug-2024.patch
+git am ~/Downloads/21-ul/frameworks_native_sept-2024.patch
 croot
 
 cd hardware/interfaces
-git am ~/Downloads/hardware_interfaces-aug-2024.patch
+git am ~/Downloads/21-ul/hardware_interfaces-aug-2024.patch
 croot
 
 cd vendor/lineage
-patch -p1 < ~/Downloads/vendor_lineage-sept-2024.diff
-patch -p1 < ~/Downloads/vendor_lineage_skip_abi_checks.patch
+patch -p1 < ~/Downloads/21-ul/vendor_lineage-nov-2024.diff
+patch -p1 < ~/Downloads/21-ul/vendor_lineage_skip_abi_checks.patch
 croot
 
 cd build/make
-git am ~/Downloads/build-aug-2024.patch
+git am ~/Downloads/21-ul/build-aug-2024.patch
 croot
 
 # needed for fix compiler error
 
 cd hardware/lineage/interfaces/
-patch -p1 < ~/Downloads/hardware_lineage_interfaces.diff
+patch -p1 < ~/Downloads/21-ul/hardware_lineage_interfaces.diff
 croot
 
 # apply device specific patches for each monthly security build
@@ -138,6 +138,10 @@ croot
 cd system/apex
 patch -p1 < ~/Downloads/msm8976-patches/system_apex.diff
 croot
+
+# run to pickup new environment variables via patches
+
+. build/envsetup.sh
 
 [/code]
 
