@@ -1,0 +1,139 @@
+We are using LineageOS-UL for the repos.  See instructions on how to initialize
+and get started at
+
+https://github.com/LineageOS-UL/android
+
+repo init -u https://github.com/LineageOS-UL/android.git -b lineage-21.0 --git-lfs --depth=1
+
+=== MONTHLY ===
+
+Here are the instructions on how to make Nov 1st security patches and possibly beyond for LineageOS 21.0.
+
+These instructions WILL CHANGE month to month.
+
+1. setup build environment and get latest git binary
+
+[code=bash]
+. build/envsetup.sh
+cd .repo/repo
+git pull
+croot
+[/code]
+
+2. The Nov 1st patches are at
+
+https://review.lineageos.org/q/topic:%22U_asb_2024-11%22
+
+Since UL repos have not been updated in a few months now, we will stop using the UL repos and use the original LineageOS repos and apply the UL patches manually via git am command.  Thus, we need to change our .repo/manifests default.xml and snippets/losul.xml
+files to reflect the above.
+
+[code=bash]
+
+# stash all our changes so we get the latest repo update, then reapply patches later on
+# patches made via git am are automatically removed with repo sync --force-sync
+
+cd hardware/lineage/interfaces/
+git stash --include-untracked
+croot
+cd hardware/samsung/
+git stash --include-untracked
+croot
+cd hardware/samsung_slsi/exynos/
+git stash --include-untracked
+croot
+cd hardware/samsung_slsi/exynos5433/
+git stash --include-untracked
+croot
+cd vendor/lineage
+git stash --include-untracked
+croot
+
+[/code]
+
+3. repo sync everything
+
+[code=bash]
+
+cd .repo/manifests
+# stash any changes from last time and use the new Nov 2024 patch file
+git stash --include-untracked
+patch -p1 < ~/Downloads/nov-2024-manifests.patch
+croot
+
+repo sync --force-sync
+
+# Nov 5th patches not yet merged, so pick them manually
+repopick -t U_asb_2024-11
+[/code]
+
+4. Now we have to apply the UL patches.
+
+[code=bash]
+# Reapply UL patches below
+# All patches are at
+# https://github.com/retiredtab/LineageOS-build-manifests/tree/main/21/UL-patches-2024
+
+###### LineageOS-UL SPECIFIC repo patches ######
+
+cd build/make
+git am ~/Downloads/21-ul/build-aug-2024.patch
+croot
+
+cd packages/modules/Bluetooth
+git am ~/Downloads/21-ul/packages_modules_Bluetooth-aug-2024.patch
+croot
+
+cd frameworks/av
+git am ~/Downloads/21-ul/frameworks-av-sept-2024.patch
+croot
+
+cd frameworks/base
+git am ~/Downloads/21-ul/frameworks-base-aug-2024.patch
+croot
+
+cd frameworks/native
+git am ~/Downloads/21-ul/frameworks_native_sept-2024.patch
+croot
+
+cd hardware/interfaces
+git am ~/Downloads/21-ul/hardware_interfaces-aug-2024.patch
+croot
+
+cd vendor/lineage
+patch -p1 < ~/Downloads/21-ul/vendor_lineage-nov-2024.diff
+patch -p1 < ~/Downloads/21-ul/vendor_lineage_skip_abi_checks.patch
+croot
+
+# we need to rerun . build/envsetup.sh to get the skip abi checks patch above.
+
+. build/envsetup.sh
+
+# needed for fix compiler error
+
+cd hardware/lineage/interfaces/
+patch -p1 < ~/Downloads/21-ul/hardware_lineage_interfaces.diff
+croot
+
+###### DEVICE SPECIFIC patches ######
+
+# needed for our 5433 devices
+
+cd hardware/samsung/
+patch -p1 < ~/Downloads/5433-patches/hardware_samsung.diff
+croot
+cd hardware/samsung_slsi/exynos/
+patch -p1 < ~/Downloads/5433-patches/hardware_samsung_slsi_exynos.diff
+croot
+cd hardware/samsung_slsi/exynos5433
+patch -p1 < ~/Downloads/5433-patches/hardware_samsung_slsi_exynos5433.diff
+croot
+
+[/code]
+
+5. # for samsung_slsi libfimg4x: Fix a -Wunreachable-code-loop-increment compilation error
+
+[code=bash]
+repopick -f 331661
+[/code]
+
+6. Breakfast and Brunch as usual.
