@@ -1,0 +1,48 @@
+#project hardware/samsung/
+
+diff --git a/audio/Android.mk b/audio/Android.mk
+index 813278d..da74592 100644
+--- a/audio/Android.mk
++++ b/audio/Android.mk
+@@ -40,16 +40,16 @@ LOCAL_SHARED_LIBRARIES := \
+ 	libdl \
+ 	libsecril-client
+ 
+-
+ LOCAL_C_INCLUDES += \
+ 	$(LOCAL_PATH)/include \
+ 	external/tinyalsa/include \
+ 	external/tinycompress/include \
+ 	hardware/libhardware/include \
+-	hardware/samsung/ril/libsecril-client \
+ 	$(call include-path-for, audio-utils) \
+ 	$(call include-path-for, audio-route) \
+-	$(call include-path-for, audio-effects)
++	$(call include-path-for, audio-effects) \
++	hardware/ril/include \
++	hardware/samsung/ril/libsecril-client
+ 
+ LOCAL_CFLAGS := -Werror -Wall
+ LOCAL_CFLAGS += -DPREPROCESSING_ENABLED
+diff --git a/ril/libsecril-client/Android.mk b/ril/libsecril-client/Android.mk
+index 3aa68f4..50e751b 100755
+--- a/ril/libsecril-client/Android.mk
++++ b/ril/libsecril-client/Android.mk
+@@ -13,6 +13,9 @@ LOCAL_SHARED_LIBRARIES := \
+     libhardware_legacy \
+     liblog
+ 
++LOCAL_C_INCLUDES += \
++    hardware/ril/include
++
+ LOCAL_CFLAGS := 
+ 
+ ifeq ($(TARGET_BOARD_PLATFORM),exynos4)
+@@ -29,4 +32,6 @@ endif
+ LOCAL_MODULE:= libsecril-client
+ LOCAL_PRELINK_MODULE := false
+ 
++LOCAL_VENDOR_MODULE := true
++
+ include $(BUILD_SHARED_LIBRARY)
+

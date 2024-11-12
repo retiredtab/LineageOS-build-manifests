@@ -1,0 +1,28 @@
+# project hardware/samsung_slsi/exynos/
+
+diff --git a/libhwc/ExynosHWC.cpp b/libhwc/ExynosHWC.cpp
+index 02913a4..4149862 100644
+--- a/libhwc/ExynosHWC.cpp
++++ b/libhwc/ExynosHWC.cpp
+@@ -874,7 +874,7 @@ void exynos5_dump(hwc_composer_device_1* dev, char *buff, int buff_len)
+         pdev->virtualDisplay->dumpLayerInfo(result);
+     }
+ #endif
+-    strlcpy(buff, result.string(), buff_len);
++    strlcpy(buff, result.c_str(), buff_len);
+ }
+ 
+ int exynos5_getDisplayConfigs(struct hwc_composer_device_1 *dev,
+diff --git a/libhwcutils/ExynosMPP.cpp b/libhwcutils/ExynosMPP.cpp
+index 7335ab7..c82b354 100644
+--- a/libhwcutils/ExynosMPP.cpp
++++ b/libhwcutils/ExynosMPP.cpp
+@@ -54,7 +54,6 @@ ExynosMPP::ExynosMPP(ExynosDisplay *display, int gscIndex)
+     mDoubleOperation = false;
+     mBufferFreeThread = new BufferFreeThread(this);
+     mBufferFreeThread->mRunning = true;
+-    mBufferFreeThread->run("MPPThread");
+ }
+ 
+ ExynosMPP::~ExynosMPP()
+
