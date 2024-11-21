@@ -1,0 +1,99 @@
+diff --git a/libhwjpeg/Android.mk b/libhwjpeg/Android.mk
+index 8c06d53..dd87674 100644
+--- a/libhwjpeg/Android.mk
++++ b/libhwjpeg/Android.mk
+@@ -18,6 +18,7 @@ include $(CLEAR_VARS)
+ LOCAL_MODULE_TAGS := optional
+ 
+ LOCAL_MODULE := libhwjpeg
++# LOCAL_VENDOR_MODULE := true
+ 
+ LOCAL_C_INCLUDES := \
+ 	$(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr/include \
+diff --git a/libkeymaster/Android.mk b/libkeymaster/Android.mk
+index b2ecffa..eabb2ed 100644
+--- a/libkeymaster/Android.mk
++++ b/libkeymaster/Android.mk
+@@ -20,6 +20,7 @@ include $(CLEAR_VARS)
+ MOBICORE_PATH := hardware/samsung_slsi/exynos5420/mobicore
+ 
+ LOCAL_MODULE := keystore.exynos5
++# LOCAL_VENDOR_MODULE := true
+ LOCAL_MODULE_PATH := $(TARGET_OUT_VENDOR_SHARED_LIBRARIES)/hw
+ LOCAL_SRC_FILES := keymaster_mobicore.cpp tlcTeeKeymaster_if.c
+ LOCAL_C_INCLUDES := \
+diff --git a/mobicore/daemon/Android.mk b/mobicore/daemon/Android.mk
+index d593a27..29d64f3 100644
+--- a/mobicore/daemon/Android.mk
++++ b/mobicore/daemon/Android.mk
+@@ -10,7 +10,7 @@ LOCAL_PATH := $(call my-dir)
+ # =============================================================================
+ include $(CLEAR_VARS)
+ LOCAL_MODULE := libMcClient
+-LOCAL_VENDOR_MODULE := true
++# LOCAL_VENDOR_MODULE := true
+ LOCAL_MODULE_TAGS := optional
+ LOCAL_C_INCLUDES += $(GLOBAL_INCLUDES)
+ LOCAL_SHARED_LIBRARIES += $(GLOBAL_LIBRARIES) liblog
+@@ -49,7 +49,7 @@ include $(BUILD_SHARED_LIBRARY)
+ include $(CLEAR_VARS)
+ 
+ LOCAL_MODULE := mcDriverDaemon
+-LOCAL_VENDOR_MODULE := true
++# LOCAL_VENDOR_MODULE := true
+ LOCAL_MODULE_TAGS := optional
+ LOCAL_CFLAGS += -include buildTag.h
+ LOCAL_CFLAGS += -DLOG_TAG=\"McDaemon\"
+@@ -89,7 +89,7 @@ include $(BUILD_EXECUTABLE)
+ include $(CLEAR_VARS)
+ 
+ LOCAL_MODULE := libMcRegistry
+-LOCAL_VENDOR_MODULE := true
++# LOCAL_VENDOR_MODULE := true
+ LOCAL_MODULE_TAGS := optional
+ LOCAL_CFLAGS += -DLOG_TAG=\"McRegistry\"
+ LOCAL_C_INCLUDES += $(GLOBAL_INCLUDES)
+@@ -119,6 +119,7 @@ include $(BUILD_SHARED_LIBRARY)
+ include $(CLEAR_VARS)
+ 
+ LOCAL_MODULE := libPaApi
++# LOCAL_VENDOR_MODULE := true
+ LOCAL_MODULE_TAGS := optional
+ LOCAL_CFLAGS += -DLOG_TAG=\"PaApi\"
+ LOCAL_C_INCLUDES += $(GLOBAL_INCLUDES)
+diff --git a/mobicore/provlib/jni/Android.mk b/mobicore/provlib/jni/Android.mk
+index 22e1e79..b810fbc 100644
+--- a/mobicore/provlib/jni/Android.mk
++++ b/mobicore/provlib/jni/Android.mk
+@@ -3,6 +3,7 @@ LOCAL_PATH := $(call my-dir)
+ include $(CLEAR_VARS)
+ 
+ LOCAL_MODULE      := libgdmcprov
++# LOCAL_VENDOR_MODULE := true
+ 
+ LOCAL_C_INCLUDES  := $(LOCAL_PATH)/../inc_private \
+                      $(LOCAL_PATH)/../inc_public \
+diff --git a/mobicore/rootpa/Code/Android/app/jni/Common/Android.mk b/mobicore/rootpa/Code/Android/app/jni/Common/Android.mk
+index 8ab6244..02415a6 100644
+--- a/mobicore/rootpa/Code/Android/app/jni/Common/Android.mk
++++ b/mobicore/rootpa/Code/Android/app/jni/Common/Android.mk
+@@ -76,6 +76,7 @@ ifeq ($(ROOTPA_MODULE_TEST), 1)
+ else
+     LOCAL_MODULE    := provisioningagent
+ endif
++# LOCAL_VENDOR_MODULE := true
+ 
+ LOCAL_MODULE_TAGS := optional
+ 
+diff --git a/mobicore/rootpa/Code/Android/app/jni/CommonPAWrapper/Android.mk b/mobicore/rootpa/Code/Android/app/jni/CommonPAWrapper/Android.mk
+index ca4e734..597522f 100644
+--- a/mobicore/rootpa/Code/Android/app/jni/CommonPAWrapper/Android.mk
++++ b/mobicore/rootpa/Code/Android/app/jni/CommonPAWrapper/Android.mk
+@@ -58,6 +58,7 @@ LOCAL_C_INCLUDES +=  $(MOBICORE_DIR_INC)/TlCm
+ LOCAL_C_INCLUDES +=  $(LOCAL_PATH)/../../../../Common/include
+ 
+ LOCAL_MODULE    := libcommonpawrapper
++# LOCAL_VENDOR_MODULE := true
+ LOCAL_MODULE_TAGS := optional
+ 
+ ifeq ($(ROOTPA_MODULE_TEST), 1)

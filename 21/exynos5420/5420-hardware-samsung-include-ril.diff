@@ -1,0 +1,25 @@
+diff --git a/audio/Android.mk b/audio/Android.mk
+index 813278d..d7dd8b2 100644
+--- a/audio/Android.mk
++++ b/audio/Android.mk
+@@ -46,6 +46,7 @@ LOCAL_C_INCLUDES += \
+ 	external/tinyalsa/include \
+ 	external/tinycompress/include \
+ 	hardware/libhardware/include \
++	hardware/ril/include \
+ 	hardware/samsung/ril/libsecril-client \
+ 	$(call include-path-for, audio-utils) \
+ 	$(call include-path-for, audio-route) \
+diff --git a/ril/libsecril-client/Android.mk b/ril/libsecril-client/Android.mk
+index 3aa68f4..6cbf535 100755
+--- a/ril/libsecril-client/Android.mk
++++ b/ril/libsecril-client/Android.mk
+@@ -27,6 +27,8 @@ LOCAL_CFLAGS += -DUSES_VND_SECRIL
+ endif
+ 
+ LOCAL_MODULE:= libsecril-client
++LOCAL_VENDOR_MODULE := true
++LOCAL_C_INCLUDES += hardware/ril/include
+ LOCAL_PRELINK_MODULE := false
+ 
+ include $(BUILD_SHARED_LIBRARY)

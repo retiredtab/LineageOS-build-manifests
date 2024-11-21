@@ -1,0 +1,25 @@
+project hardware/samsung_slsi/exynos5/
+diff --git a/libgscaler/Android.mk b/libgscaler/Android.mk
+index d72c138..00b76c8 100644
+--- a/libgscaler/Android.mk
++++ b/libgscaler/Android.mk
+@@ -40,6 +40,7 @@ LOCAL_SRC_FILES := \
+ 
+ LOCAL_MODULE_TAGS := eng
+ LOCAL_MODULE := libexynosgscaler
++# LOCAL_VENDOR_MODULE := true
+ 
+ include $(TOP)/hardware/samsung_slsi/exynos/BoardConfigCFlags.mk
+ include $(BUILD_SHARED_LIBRARY)
+diff --git a/libkeymaster/Android.mk b/libkeymaster/Android.mk
+index ffff40c..5c30b1d 100644
+--- a/libkeymaster/Android.mk
++++ b/libkeymaster/Android.mk
+@@ -20,6 +20,7 @@ include $(CLEAR_VARS)
+ MOBICORE_PATH := hardware/samsung_slsi/$(TARGET_SOC)/mobicore
+ 
+ LOCAL_MODULE := keystore.exynos5
++# # LOCAL_VENDOR_MODULE := true
+ LOCAL_MODULE_RELATIVE_PATH := hw
+ LOCAL_SRC_FILES := keymaster_mobicore.cpp tlcTeeKeymaster_if.c
+ LOCAL_C_INCLUDES := \
