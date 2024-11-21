@@ -2,6 +2,7 @@
 <manifest>
 
 <!-- Samsung Hardware Repo -->
+
   <project path="hardware/samsung" name="LineageOS/android_hardware_samsung" remote="github" revision="lineage-21"/>
 
   <project name="LineageOS/android_hardware_samsung_slsi_exynos" path="hardware/samsung_slsi/exynos" remote="github" revision="lineage-19.1" />
@@ -9,17 +10,10 @@
   <project name="LineageOS/android_hardware_samsung_slsi_openmax" path="hardware/samsung_slsi/openmax" remote="github" revision="lineage-19.1" />
   <project name="exynos5420/android_hardware_samsung_slsi_exynos5420" path="hardware/samsung_slsi/exynos5420" remote="github" revision="lineage-18.1" />
 
-<!--
-  <project name="exynos5420/android_device_samsung_klimt-common" path="device/samsung/klimt-common" remote="github" revision="lineage-18.1" />
-  <project name="exynos5420/android_device_samsung_klimtwifi" path="device/samsung/klimtwifi" remote="github" revision="lineage-18.1" />
-
-  <project name="exynos5420/android_vendor_samsung_klimt-common" path="vendor/samsung/klimt-common" remote="github" revision="lineage-18.1" />
-  <project name="exynos5420/android_vendor_samsung_klimtwifi" path="vendor/samsung/klimtwifi" remote="github" revision="lineage-18.1" />
--->
-
 <!-- DEVICES -->
 
   <project name="retiredtab/android_device_samsung_universal5420-common" path="device/samsung/universal5420-common" remote="github" revision="lineage-21.0" />
+
   <project name="retiredtab/android_device_samsung_chagall-common" path="device/samsung/chagall-common" remote="github" revision="lineage-21.0" />
   <project name="retiredtab/android_device_samsung_chagallwifi" path="device/samsung/chagallwifi" remote="github" revision="lineage-21.0" />
 
@@ -27,26 +21,23 @@
   <project name="retiredtab/android_device_samsung_n1a-common" path="device/samsung/n1a-common" remote="github" revision="lineage-21.0"/>
   <project name="retiredtab/android_device_samsung_n1awifi" path="device/samsung/n1awifi" remote="github" revision="lineage-21.0"/>
 
-<!--
-  <project name="exynos5420/android_device_samsung_klimt-common" path="device/samsung/klimt-common" remote="github" revision="lineage-18.1" />
-  <project name="exynos5420/android_device_samsung_klimtwifi" path="device/samsung/klimtwifi" remote="github" revision="lineage-18.1" />
--->
+  <project name="retiredtab/android_device_samsung_klimt-common" path="device/samsung/klimt-common" remote="github" revision="lineage-21.0" />
+  <project name="retiredtab/android_device_samsung_klimtwifi" path="device/samsung/klimtwifi" remote="github" revision="lineage-21.0" />
 
   <project name="LineageOS/android_device_samsung_slsi_sepolicy" path="device/samsung_slsi/sepolicy" remote="github" revision="lineage-21" />
 
 <!-- VENDOR -->
 
   <project name="exynos5420/android_vendor_samsung_universal5420-common" path="vendor/samsung/universal5420-common" remote="github" revision="lineage-18.1" />
+
   <project name="exynos5420/android_vendor_samsung_chagall-common" path="vendor/samsung/chagall-common" remote="github" revision="lineage-18.1" />
   <project name="elim-garak-dev/android_vendor_samsung_chagallwifi" path="vendor/samsung/chagallwifi" remote="github" revision="lineage-19.1" />
 
   <project name="exynos5420/android_vendor_samsung_n1a-common" path="vendor/samsung/n1a-common" remote="github" revision="lineage-18.1"/>
   <project name="retiredtab/android_vendor_samsung_n1awifi" path="vendor/samsung/n1awifi" remote="github" revision="lineage-21.1"/>
 
-<!--
   <project name="exynos5420/android_vendor_samsung_klimt-common" path="vendor/samsung/klimt-common" remote="github" revision="lineage-18.1" />
   <project name="exynos5420/android_vendor_samsung_klimtwifi" path="vendor/samsung/klimtwifi" remote="github" revision="lineage-18.1" />
--->
 
 <!-- KERNEL -->
 
