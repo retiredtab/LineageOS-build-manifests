@@ -1,3 +1,17 @@
+# After QPR3, c2 codecs crash on exynos5420. Revert back to omx codecs by reverting
+#
+# https://github.com/LineageOS/android_frameworks_av/commit/60ea1ce6e8f5e8b258e15a2f7eaf10b9563e8614
+#
+# logcat error message of c2 codec crashing
+# 
+# 09-20 12:26:54.632  3527  3783 I CCodecBufferChannel: [c2.android.vorbis.decoder#836] Created output block pool with allocatorID 16 => poolID 18 - OK
+# 09-20 12:26:54.635  3527  3783 D CCodecBufferChannel: [c2.android.vorbis.decoder#836] Configured output block pool ids 18 => OK
+# 09-20 12:26:54.637  3527  3784 E ion     : ioctl c0044901 failed with code -1: Invalid argument
+# 09-20 12:26:54.638  3527  3783 E ion     : ioctl c0044901 failed with code -1: Invalid argument
+# --------- beginning of crash
+# 09-20 12:26:54.640  3527  3784 F libc    : Fatal signal 11 (SIGSEGV), code 2 (SEGV_ACCERR), fault addr 0xa8221000 in tid 3784 (NDK MediaCodec_), pid 3527 (system_server)
+# 09-20 12:26:54.640  3502  3502 W AudioOut_D: type=1701 audit(0.0:206): auid=4294967295 uid=1041 gid=1005 ses=4294967295 subj=u:r:audioserver:s0 reason="memory violation" sig=11
+
 diff --git a/media/libstagefright/omx/Android.bp b/media/libstagefright/omx/Android.bp
 index 346f40f..92d48f4 100644
 --- a/media/libstagefright/omx/Android.bp
