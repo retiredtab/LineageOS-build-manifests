@@ -2,7 +2,7 @@
 <manifest>
 
  <!-- Samsung MSM8996 Device Repos -->
-  <project path="device/samsung/gts3l-common" name="/retiredcrave/android_device_samsung_gts3l-common"  remote="github" revision="21"/>
+  <project path="device/samsung/gts3l-common" name="retiredcrave/android_device_samsung_gts3l-common"  remote="github" revision="21"/>
 
   <project path="device/samsung/gts3lwifi" name="awesometic/android_device_samsung_gts3lwifi"  remote="github" revision="lineage-20.0"/>
 
