@@ -1,0 +1,142 @@
+These are instructions for people who know how to use Linux CLI.  If you don't know Linux, DO YOUR OWN RESEARCH.
+These instructions are for building LineageOS 21 ONLY, not some other OS variation.  DO YOUR OWN RESEARCH.
+
+You need to setup your build environment by following a guide like
+
+https://wiki.lineageos.org/devices/chagallwifi/build/
+
+You will also need 300GB or more of disk space and 64GB DRAM.  If you have less DRAM, just make your swapfile + your
+physical DRAM => 64GB.  For example, if you have 16GB DRAM, then make a 48GB swapfile.  This can be on a SSD to speed
+things up a bit.
+
+1. We are using LineageOS-UL for the repos.  See instructions on how to initialize
+and get started at
+
+https://github.com/LineageOS-UL/android
+
+repo init -u https://github.com/LineageOS-UL/android.git -b lineage-21.0 --git-lfs
+
+2. Download the msm8996-21.xml manifest file
+
+https://github.com/retiredtab/LineageOS-build-manifests/tree/main/21/msm8996
+
+Put this file into the .repo/local_manifests directory
+
+These instructions WILL CHANGE month to month.
+
+3. setup build environment
+
+. build/envsetup.sh
+
+4. Git stash our changes from last month and then reapply later on after full repo sync
+
+# stash all our changes so we get the latest repo update, then reapply patches later on
+# patches made via git am are automatically removed with repo sync --force-sync
+
+cd build/make
+git stash --include-untracked
+croot
+cd hardware/qcom-caf/wlan
+git stash --include-untracked
+croot
+cd system/apex
+git stash --include-untracked
+croot
+cd vendor/lineage
+git stash --include-untracked
+croot
+cd hardware/lineage/interfaces/
+git stash --include-untracked
+croot
+
+# stash any changes from last time and use the sept 2024 patch file
+
+cd .repo/manifests
+git stash --include-untracked
+patch -p1 < ~/Downloads/nov-2024-manifests.patch
+croot
+
+5. repo sync everything
+
+repo sync --force-sync
+
+6. Download the patches from
+
+https://github.com/retiredtab/LineageOS-build-manifests/tree/main/21/msm8976
+
+and put them into the ~/Downloads directory.  You will have to move the patches
+around to fit the commands below.  This should be easy for the experienced linux
+user as it's just coping some files into the correct directory.
+
+Now we have to reapply the UL patches.
+
+#### LineageOS-UL patches ####
+
+[code=bash]
+# Reapply UL patches below
+
+cd packages/modules/Bluetooth
+git am ~/Downloads/21-ul/packages_modules_Bluetooth-aug-2024.patch
+croot
+
+cd frameworks/av
+git am ~/Downloads/21-ul/frameworks-av-sept-2024.patch
+croot
+
+cd frameworks/base
+git am ~/Downloads/21-ul/frameworks-base-aug-2024.patch
+croot
+
+cd frameworks/native
+git am ~/Downloads/21-ul/frameworks_native_sept-2024.patch
+croot
+
+cd hardware/interfaces
+git am ~/Downloads/21-ul/hardware_interfaces-aug-2024.patch
+croot
+
+cd vendor/lineage
+patch -p1 < ~/Downloads/21-ul/vendor_lineage-nov-2024.diff
+patch -p1 < ~/Downloads/21-ul/vendor_lineage_skip_abi_checks.patch
+croot
+
+cd build/make
+git am ~/Downloads/21-ul/build-aug-2024.patch
+croot
+
+# re-run to pickup new environment variables via patches
+
+. build/envsetup.sh
+
+# needed for fix compiler error
+
+cd hardware/lineage/interfaces/
+patch -p1 < ~/Downloads/21-ul/hardware_lineage_interfaces.diff
+croot
+
+#### Device specific patches ####
+# apply device specific patches for each monthly security build
+
+cd build/make
+patch -p1 < ~/Downloads/msm8996-patches/build_make.diff
+croot
+cd system/apex
+patch -p1 < ~/Downloads/msm8996-patches/system_apex.diff
+croot
+
+# 8996 -> wifi driver shutup invalid error message
+cd hardware/qcom/wlan
+patch -p1 < ~/Downloads/msm8996-patches/hardware_qcom_wlan-quiet-invalid-wifi.diff
+croot
+
+7. code names
+SM-T813 = gts210vewifi
+SM-T713 = gts28vewifi
+
+breakfast code name
+
+example, breakfast gts210vewifi
+
+8. brunch code name
+
+example, brunch gts210vewifi

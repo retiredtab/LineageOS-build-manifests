@@ -1,0 +1,14 @@
+diff --git a/legacy/qcwcn/wifi_hal/wifilogger_diag.cpp b/legacy/qcwcn/wifi_hal/wifilogger_diag.cpp
+index 09ac928..96f3fc4 100644
+--- a/legacy/qcwcn/wifi_hal/wifilogger_diag.cpp
++++ b/legacy/qcwcn/wifi_hal/wifilogger_diag.cpp
+@@ -2741,7 +2741,8 @@ wifi_error diag_message_handler(hal_info *info, nl_msg *msg)
+     }
+ 
+     if (!clh) {
+-         ALOGE("Invalid data received from driver");
++         /* It spams SM-T820 log every 1 second */
++         /* ALOGE("Invalid data received from driver"); */
+          return WIFI_ERROR_UNKNOWN;
+     }
+     /* Check nlmsg_type also to avoid processing unintended msgs */

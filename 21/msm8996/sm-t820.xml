@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<manifest>
+
+ <!-- Samsung MSM8996 Device Repos -->
+  <project path="device/samsung/gts3l-common" name="/retiredcrave/android_device_samsung_gts3l-common"  remote="github" revision="21"/>
+
+  <project path="device/samsung/gts3lwifi" name="awesometic/android_device_samsung_gts3lwifi"  remote="github" revision="lineage-20.0"/>
+
+<!-- Samsung MSM8996 Vendor Repos -->
+  <project path="vendor/samsung" name="retiredtab/proprietary_vendor_samsung-gts3l"  remote="github" revision="21"/>
+
+<!-- Samsung MSM8996 Kernel Repos -->
+  <project path="kernel/samsung/msm8996" name="retiredtab/android_kernel_samsung_msm8996"  remote="github" revision="lineage-21.0-caf"/>
+
+ <!-- Samsung MSM8996 Common Repos -->
+  <project path="device/samsung/qcom-common" name="LineageOS/android_device_samsung_qcom-common" remote="github" revision="lineage-21"/>
+
+ <!-- Samsung Hardware Repo -->
+  <project path="hardware/samsung" name="LineageOS/android_hardware_samsung" remote="github" revision="lineage-21"/>
+
+</manifest>
