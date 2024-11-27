@@ -16,11 +16,12 @@ https://github.com/LineageOS-UL/android
 
 repo init -u https://github.com/LineageOS-UL/android.git -b lineage-21.0 --git-lfs
 
-2. Download the msm8996-21.xml manifest file
+2. Download the sm-t820.xml manifest file
 
 https://github.com/retiredtab/LineageOS-build-manifests/tree/main/21/msm8996
 
-Put this file into the .repo/local_manifests directory
+Put this file into the .repo/local_manifests directory.  If the directory doesn't exist, just
+create it.
 
 These instructions WILL CHANGE month to month.
 
@@ -128,6 +129,10 @@ croot
 cd hardware/qcom/wlan
 patch -p1 < ~/Downloads/msm8996-patches/hardware_qcom_wlan-quiet-invalid-wifi.diff
 croot
+
+# re-run to pickup new environment variables via patches
+
+. build/envsetup.sh
 
 7. code names
 SM-T813 = gts210vewifi
