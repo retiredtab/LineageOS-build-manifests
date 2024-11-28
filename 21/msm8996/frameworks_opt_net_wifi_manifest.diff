@@ -1,0 +1,26 @@
+diff --git a/default.xml b/default.xml
+index 83dacca..e9045d6 100644
+--- a/default.xml
++++ b/default.xml
+@@ -902,7 +902,7 @@
+   <project path="frameworks/opt/net/ethernet" name="platform/frameworks/opt/net/ethernet" groups="pdk-fs" remote="aosp" />
+   <project path="frameworks/opt/net/ims" name="platform/frameworks/opt/net/ims" groups="frameworks_ims,pdk-cw-fs,pdk-fs" remote="aosp" />
+   <project path="frameworks/opt/net/voip" name="platform/frameworks/opt/net/voip" groups="pdk-cw-fs,pdk-fs" remote="aosp" />
+-  <!--<project path="frameworks/opt/net/wifi" name="platform/frameworks/opt/net/wifi" groups="pdk,sysui-studio" remote="aosp" />-->
++  <project path="frameworks/opt/net/wifi" name="platform/frameworks/opt/net/wifi" groups="pdk,sysui-studio" remote="aosp" />
+   <project path="frameworks/opt/photoviewer" name="platform/frameworks/opt/photoviewer" groups="pdk-cw-fs,pdk-fs" remote="aosp" />
+   <project path="frameworks/opt/setupwizard" name="platform/frameworks/opt/setupwizard" groups="pdk-cw-fs,pdk-fs" remote="aosp" />
+   <!--<project path="frameworks/opt/telephony" name="LineageOS/android_frameworks_opt_telephony" groups="pdk" />-->
+diff --git a/snippets/losul.xml b/snippets/losul.xml
+index 8c54a06..a0bbb94 100644
+--- a/snippets/losul.xml
++++ b/snippets/losul.xml
+@@ -21,7 +21,7 @@
+   <project path="frameworks/ex" name="LineageOS-UL/android_frameworks_ex" groups="pdk-cw-fs,pdk-fs" remote="losul" />
+   <project path="frameworks/native" name="LineageOS-UL/android_frameworks_native" remote="losul" />
+   <project path="frameworks/opt/telephony" name="LineageOS-UL/android_frameworks_opt_telephony" remote="losul" />
+-  <project path="frameworks/opt/net/wifi" name="LineageOS-UL/android_frameworks_opt_net_wifi" remote="losul" />
++  <!--<project path="frameworks/opt/net/wifi" name="LineageOS-UL/android_frameworks_opt_net_wifi" remote="losul" /> -->
+   
+   <project path="hardware/libhardware_legacy" name="LineageOS-UL/android_hardware_libhardware_legacy" remote="losul" />
+ 
