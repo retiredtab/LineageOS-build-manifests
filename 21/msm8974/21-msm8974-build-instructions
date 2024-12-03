@@ -26,12 +26,23 @@ cd frameworks/opt/net/wifi
 git stash --include-untracked
 croot
 
+cd vendor/lineage
+git stash --include-untracked
+croot
+
 cd system/vold
 git stash --include-untracked
 croot
 
 4. repo sync everything
-repo sync -c -j$(nproc --all) --force-sync --no-clone-bundle --no-tags
+
+cd .repo/manifests
+# stash any changes from last time and use the new Nov 2024 patch file
+git stash --include-untracked
+patch -p1 < ~/Downloads/21-ul/nov-2024-manifests.patch
+croot
+
+repo sync --force-sync
 
 # Dec 1st patches not yet merged so pick them manually.
 repopick -t U_asb_2024-12
