@@ -108,7 +108,7 @@ croot
 # Patch system/vold for micro sdcard access
 
 cd system/vold
-patch -p1 < ~/Downloads/msm8974-patches/system_vold_remove_time_offset.diff
+patch -p1 < ~/Downloads/msm8974-patches/system_vold.diff
 croot
 
 
