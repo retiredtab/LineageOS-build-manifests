@@ -77,7 +77,7 @@ croot
 
 5. repo sync everything
 
-repo sync
+repo sync --force-sync
 
 # Dec 1st patches not yet merged so pick them manually.
 # Depending on when you sync, these patches may or may not be merged.
