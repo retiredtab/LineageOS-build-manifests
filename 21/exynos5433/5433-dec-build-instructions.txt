@@ -20,9 +20,9 @@ git pull
 croot
 [/code]
 
-2. The Nov 1st patches are at
+2. The Dec 1st patches are at
 
-https://review.lineageos.org/q/topic:%22U_asb_2024-11%22
+https://review.lineageos.org/q/topic:%22U_asb_2024-12%22
 
 Since UL repos have not been updated in a few months now, we will stop using the UL repos and use the original LineageOS repos and apply the UL patches manually via git am command.  Thus, we need to change our .repo/manifests default.xml and snippets/losul.xml
 files to reflect the above.
@@ -62,8 +62,8 @@ croot
 
 repo sync --force-sync
 
-# Nov 1st patches now merged.  Skip this test.
-# repopick -t U_asb_2024-11
+# Dec 1st patches not yet merged so pick them manually.
+# repopick -t U_asb_2024-12
 [/code]
 
 4. Now we have to apply the UL patches.
