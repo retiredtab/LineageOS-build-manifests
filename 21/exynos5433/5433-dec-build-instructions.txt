@@ -63,7 +63,7 @@ croot
 repo sync --force-sync
 
 # Dec 1st patches not yet merged so pick them manually.
-# repopick -t U_asb_2024-12
+repopick -t U_asb_2024-12
 [/code]
 
 4. Now we have to apply the UL patches.
