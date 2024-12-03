@@ -79,6 +79,11 @@ croot
 
 repo sync
 
+# Dec 1st patches not yet merged so pick them manually.
+# Depending on when you sync, these patches may or may not be merged.
+
+repopick -t U_asb_2024-12
+
 6. Download the patches from
 
 https://github.com/retiredtab/LineageOS-build-manifests/tree/main/21/UL-patches-2024
