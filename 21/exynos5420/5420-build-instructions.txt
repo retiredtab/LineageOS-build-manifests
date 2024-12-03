@@ -25,9 +25,12 @@ Put this file into the .repo/local_manifests directory
 
 These instructions WILL CHANGE month to month.
 
-3. setup build environment
+3. setup build environment and get latest repo binary
 
 . build/envsetup.sh
+cd .repo/repo
+git pull
+croot
 
 4. Git stash our changes from last month and then reapply later on after full repo sync
 
