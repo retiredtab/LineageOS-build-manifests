@@ -33,25 +33,80 @@ croot
 4. repo sync everything
 repo sync -c -j$(nproc --all) --force-sync --no-clone-bundle --no-tags
 
-5. Patch packages/modules/Bluetooth so Bluetooth won't crash
+# Dec 1st patches not yet merged so pick them manually.
+repopick -t U_asb_2024-12
+
+5. Now we have to apply the UL patches.
+
+[code=bash]
+# Reapply UL patches below
+# All patches are at
+# https://github.com/retiredtab/LineageOS-build-manifests/tree/main/21/UL-patches-2024
+
+###### LineageOS-UL SPECIFIC repo patches ######
+
+cd build/make
+git am ~/Downloads/21-ul/build-aug-2024.patch
+croot
+
+cd packages/modules/Bluetooth
+git am ~/Downloads/21-ul/packages_modules_Bluetooth-aug-2024.patch
+croot
+
+cd frameworks/av
+git am ~/Downloads/21-ul/frameworks-av-sept-2024.patch
+croot
+
+cd frameworks/base
+git am ~/Downloads/21-ul/frameworks-base-aug-2024.patch
+croot
+
+cd frameworks/native
+git am ~/Downloads/21-ul/frameworks_native_sept-2024.patch
+croot
+
+cd hardware/interfaces
+git am ~/Downloads/21-ul/hardware_interfaces-aug-2024.patch
+croot
+
+cd vendor/lineage
+patch -p1 < ~/Downloads/21-ul/vendor_lineage-nov-2024.diff
+patch -p1 < ~/Downloads/21-ul/vendor_lineage_skip_abi_checks.patch
+croot
+
+# we need to rerun . build/envsetup.sh to get the skip abi checks patch above.
+
+. build/envsetup.sh
+
+# needed for fix compiler error
+
+cd hardware/lineage/interfaces/
+patch -p1 < ~/Downloads/21-ul/hardware_lineage_interfaces.diff
+croot
+
+6.  ### Device specific patches ###
+
+
+# Patch packages/modules/Bluetooth so Bluetooth won't crash
 
 cd packages/modules/Bluetooth
 patch -p1 < ~/Downloads/packages_modules_Bluetooth.diff
 croot
 
-6. Patch to fix wifi compiler error
+# Patch to fix wifi compiler error
 
 cd hardware/qcom-caf/wlan
 patch -p1 < ~/Downloads/hardware_qcom-caf_wlan.diff
 croot
 
-7. Patch frameworks/opt/net/wifi for wifi compiler erros
+# Patch frameworks/opt/net/wifi for wifi compiler erros
 
 cd frameworks/opt/net/wifi
 patch -p1 < ~/Downloads/frameworks_opt_net_wifi.diff
 croot
 
-8. Patch system/vold
+# Patch system/vold for micro sdcard access
+
 cd system/vold
 patch -p1 < ~/Downloads/system_vold_remove_time_offset.diff
 croot
