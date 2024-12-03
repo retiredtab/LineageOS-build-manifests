@@ -30,6 +30,10 @@ cd vendor/lineage
 git stash --include-untracked
 croot
 
+cd hardware/lineage/interfaces/
+git stash --include-untracked
+croot
+
 cd system/vold
 git stash --include-untracked
 croot
