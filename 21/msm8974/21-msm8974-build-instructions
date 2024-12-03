@@ -90,25 +90,25 @@ croot
 # Patch packages/modules/Bluetooth so Bluetooth won't crash
 
 cd packages/modules/Bluetooth
-patch -p1 < ~/Downloads/packages_modules_Bluetooth.diff
+patch -p1 < ~/Downloads/msm8974-patches/packages_modules_Bluetooth.diff
 croot
 
 # Patch to fix wifi compiler error
 
 cd hardware/qcom-caf/wlan
-patch -p1 < ~/Downloads/hardware_qcom-caf_wlan.diff
+patch -p1 < ~/Downloads/msm8974-patches/hardware_qcom-caf_wlan.diff
 croot
 
 # Patch frameworks/opt/net/wifi for wifi compiler erros
 
 cd frameworks/opt/net/wifi
-patch -p1 < ~/Downloads/frameworks_opt_net_wifi.diff
+patch -p1 < ~/Downloads/msm8974-patches/frameworks_opt_net_wifi.diff
 croot
 
 # Patch system/vold for micro sdcard access
 
 cd system/vold
-patch -p1 < ~/Downloads/system_vold_remove_time_offset.diff
+patch -p1 < ~/Downloads/msm8974-patches/system_vold_remove_time_offset.diff
 croot
 
 
