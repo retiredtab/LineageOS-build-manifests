@@ -25,9 +25,12 @@ If the directory doesn't exist, just create it.
 
 These instructions WILL CHANGE month to month.
 
-3. setup build environment
+3. setup build environment and get latest repo binary
 
 . build/envsetup.sh
+cd .repo/repo
+git pull
+croot
 
 4. Git stash our changes from last month and then reapply later on after full repo sync
 
@@ -61,6 +64,11 @@ croot
 5. repo sync everything
 
 repo sync --force-sync
+
+# Dec 1st patches not yet merged so pick them manually.
+# Depending on when you sync, these patches may or may not be merged.
+
+repopick -t U_asb_2024-12
 
 6. Download the patches from
 
@@ -105,10 +113,6 @@ croot
 cd build/make
 git am ~/Downloads/21-ul/build-aug-2024.patch
 croot
-
-# re-run to pickup new environment variables via patches
-
-. build/envsetup.sh
 
 # needed for fix compiler error
 
