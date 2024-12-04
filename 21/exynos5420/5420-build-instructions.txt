@@ -75,7 +75,7 @@ croot
 
 cd .repo/manifests
 git stash --include-untracked
-patch -p1 < ~/Downloads/nov-2024-manifests.patch
+patch -p1 < ~/Downloads/21-ul/nov-2024-manifests.patch
 croot
 
 5. repo sync everything
@@ -124,6 +124,9 @@ patch -p1 < ~/Downloads/21-ul/vendor_lineage-nov-2024.diff
 patch -p1 < ~/Downloads/21-ul/vendor_lineage_skip_abi_checks.patch
 croot
 
+cd system/vold
+patch -p1 < ~/Downloads/21-ul/system_vold_remove_time_offset.diff
+croot
 
 cd build/make
 git am ~/Downloads/21-ul/build-aug-2024.patch
@@ -162,10 +165,6 @@ croot
 
 cd hardware/samsung_slsi/exynos5420
 patch -p1 < ~/Downloads/5420-patches/hardware_samsung_slsi_exynos5420.diff
-croot
-
-cd system/vold
-patch -p1 < ~/Downloads/21-ul/system_vold_remove_time_offset.diff
 croot
 
 # repopick to fix compiler errors for 5420
