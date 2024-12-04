@@ -124,9 +124,6 @@ patch -p1 < ~/Downloads/21-ul/vendor_lineage-nov-2024.diff
 patch -p1 < ~/Downloads/21-ul/vendor_lineage_skip_abi_checks.patch
 croot
 
-# rerun build environment to pickup skip abi checks patch
-
-. build/envsetup.sh
 
 cd build/make
 git am ~/Downloads/21-ul/build-aug-2024.patch
@@ -137,6 +134,10 @@ croot
 cd hardware/lineage/interfaces/
 patch -p1 < ~/Downloads/21-ul/hardware_lineage_interfaces.diff
 croot
+
+# rerun build environment to pickup skip abi checks patch
+
+. build/envsetup.sh
 
 #### 5420 specific patches ####
 
