@@ -1,0 +1,96 @@
+## Instructions to build Dec 5th 2024 security patches
+
+# cd into your code directory
+
+cd code
+
+# Setup env
+. build/envsetup.sh
+
+# Get latest git binary
+cd .repo/repo/
+git pull
+croot
+
+# Stash our changes from last month
+
+cd packages/modules/Bluetooth
+git stash --include-untracked
+croot
+
+cd frameworks/base
+git stash --include-untracked
+croot
+
+cd hardware/interfaces
+git stash --include-untracked
+croot
+
+cd frameworks/av
+git stash --include-untracked
+croot
+
+cd packages/modules/Wifi
+git stash --include-untracked
+croot
+
+# Install local monthly manifest changes
+cd .repo/manifests
+git stash --include-untracked
+croot
+
+# Sync just android repo to get latest default.xml
+repo sync --force-sync android
+
+cd .repo/manifests
+patch -p1 < ~/Downloads/20-ul/20-manifests-dec-2024.diff
+croot
+
+# Start full sync
+repo sync --force-sync
+
+# repopick Dec 5th security patches as they are not yet merged
+repopick -t T_asb_2024-12
+
+# Now re-apply all our LineageOS-UL patches
+
+cd packages/modules/Bluetooth
+git am ~/Downloads/packages_modules_Bluetooth-july-2024.patch
+croot
+
+cd frameworks/base
+git am ~/Downloads/frameworks-base-june-2024.patch
+croot
+
+cd hardware/interfaces
+git am ~/Downloads/hardware_interfaces_aug-2024.patch
+croot
+
+cd frameworks/av
+git am ~/Downloads/frameworks_av-aug-2024.patch 
+croot
+
+cd packages/modules/Wifi
+git am ~/Downloads/packages_module_Wifi-nov-2024.patch
+croot
+
+# Now apply all device specific patches
+
+# for samsung_slsi libfimg4x: Fix a -Wunreachable-code-loop-increment compilation error
+
+repopick -f 331661
+
+# Verify MPPthread patch exists.
+
+cd hardware/samsung_slsi/exynos
+git diff
+# If patch exists, there's no need to do the below
+patch -p1 < ~/Downloads/remove-MPPThread.patch
+# go back to top
+croot
+
+# Rerun Setup env to pickup any environment changes
+. build/envsetup.sh
+
+
+# Breakfast and Brunch as usual.
