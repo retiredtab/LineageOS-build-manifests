@@ -10,21 +10,93 @@ the .repo/local_manifests directory
 
 3. Git stash our changes and then reapply later on after full repo sync
 
-# cd into your 20 code directory
+# cd into your code directory
+
+# Setup env
+. build/envsetup.sh
+
+# Get latest git binary
+cd .repo/repo/
+git pull
+croot
+
+# Stash UL specific changes from last month
+
+cd packages/modules/Bluetooth
+git stash --include-untracked
+croot
+
+cd frameworks/base
+git stash --include-untracked
+croot
+
+cd hardware/interfaces
+git stash --include-untracked
+croot
+
+cd frameworks/av
+git stash --include-untracked
+croot
+
+cd packages/modules/Wifi
+git stash --include-untracked
+croot
+
+# stash device specific changes from last month
 cd hardware/qcom-caf/msm8952/display
 git stash --include-untracked
-cd ../../../..
+croot
 cd hardware/qcom-caf/wlan
 git stash --include-untracked
-cd ../../..
+croot
 cd kernel/samsung/msm8976
 git stash --include-untracked
-cd ../../..
+croot
 
-4. repo sync everything
-repo sync -c -j$(nproc --all) --force-sync --no-clone-bundle --no-tags
+# Sync just android repo to get latest default.xml
+repo sync --force-sync android
 
-5.
+# Install Nov manifest changes
+cd .repo/manifests
+git stash --include-untracked
+patch -p1 < ~/Downloads/20-ul/20-manifests-nov-2024.diff
+croot
+
+4. repo sync everything - espeak is optional
+
+repo sync --force-sync ; espeak "sync done"
+
+# repopick Dec 5th security patches as they are not yet merged
+repopick -t T_asb_2024-12
+
+5. Reapply all patches
+
+# Now re-apply all our LineageOS-UL patches
+# All the patches are at
+# https://github.com/retiredtab/LineageOS-build-manifests/tree/main/20/UL-patches-2024
+# Put them in the correct direcotry - Linux users should know how to do this
+
+cd packages/modules/Bluetooth
+git am ~/Downloads/20-ul/packages_modules_Bluetooth-july-2024.patch
+croot
+
+cd frameworks/base
+git am ~/Downloads/20-ul/frameworks-base-june-2024.patch
+croot
+
+cd hardware/interfaces
+git am ~/Downloads/20-ul/hardware_interfaces_aug-2024.patch
+croot
+
+cd frameworks/av
+git am ~/Downloads/20-ul/frameworks_av-aug-2024.patch
+croot
+
+cd packages/modules/Wifi
+git am ~/Downloads/20-ul/packages_module_Wifi-nov-2024.patch
+croot
+
+#### Device specific patches ####
 
 # For msm8976 compiler error message
 # https://github.com/LineageOS/android_vendor_lineage/commit/8f67d055b36d992f2f09aa6f733aa06ee3d5b917
@@ -33,25 +105,25 @@ repo sync -c -j$(nproc --all) --force-sync --no-clone-bundle --no-tags
 # git revert Remove libbfqio
 cd vendor/lineage
 git revert 8f67d055b36d992f2f09aa6f733aa06ee3d5b917
-cd ../..
+croot
 
 6. # Patch to make newpipe show video
 
 cd hardware/qcom-caf/msm8952/display
 patch -p1 < ~/Downloads/alloc_controller-ionHeapId.diff
-cd ../../../..
+croot
 
 7. # Patch to fix wifi compiler error
 
 cd hardware/qcom-caf/wlan
 patch -p1 < ~/Downloads/driver_cmd_nl80211_patch.diff
-cd ../../..
+croot
 
 8. # Multiple patches for kernel to make it work with LineageOS 20
 
 cd kernel/samsung/msm8976
 patch -p1 < ~/Downloads/msm8976-kernel-april-15.diff
-cd ../../..
+croot
 
 9. code names
 SM-T813 = gts210vewifi
