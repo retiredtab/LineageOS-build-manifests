@@ -53,13 +53,17 @@ cd kernel/samsung/msm8976
 git stash --include-untracked
 croot
 
-# Sync just android repo to get latest default.xml
-repo sync --force-sync android
 
 # Install Nov manifest changes
 cd .repo/manifests
 git stash --include-untracked
-patch -p1 < ~/Downloads/20-ul/20-manifests-nov-2024.diff
+croot
+
+# Sync just android repo to get latest default.xml
+repo sync --force-sync android
+
+cd .repo/manifests
+patch -p1 < ~/Downloads/20-ul/20-manifests-dec-2024.diff
 croot
 
 4. repo sync everything - espeak is optional
