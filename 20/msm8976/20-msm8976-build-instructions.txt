@@ -54,7 +54,7 @@ git stash --include-untracked
 croot
 
 
-# Install Nov manifest changes
+# Install local monthly manifest changes
 cd .repo/manifests
 git stash --include-untracked
 croot
@@ -128,6 +128,9 @@ croot
 cd kernel/samsung/msm8976
 patch -p1 < ~/Downloads/msm8976-kernel-april-15.diff
 croot
+
+# Rerun Setup env to pickup any environment changes
+. build/envsetup.sh
 
 9. code names
 SM-T813 = gts210vewifi
