@@ -137,38 +137,3 @@ repopick -f 331661
 . build/envsetup.sh
 
 6. Breakfast and Brunch as usual.
-
-
-
-01-20 00:03:39.823  4296  4296 E dex2oat32: Error reading named image component header for /system/framework/boot.art, error: ValidateOatFile found read barrier state mismatch (oat file: false, runtime: true)
-01-20 00:03:39.823  4296  4296 E dex2oat32: Could not create image space with image file '/system/framework/boot.art:/system/framework/boot-framework-adservices.art'. Attempting to fall back to imageless running. Error was: ValidateOatFile found read barrier state mismatch (oat file: false, runtime: true)
-
-
-01-20 00:31:49.251  7608  7608 F DEBUG   :   NOTE: Function names and BuildId information is missing for some frames due
-01-20 00:31:49.251  7608  7608 F DEBUG   :   NOTE: to unreadable libraries. For unwinds of apps, only shared libraries
-01-20 00:31:49.251  7608  7608 F DEBUG   :   NOTE: found under the lib/ directory are readable.
-01-20 00:31:49.251  7608  7608 F DEBUG   :   NOTE: On this device, run setenforce 0 to make the libraries readable.
-01-20 00:31:49.251  7608  7608 F DEBUG   :   NOTE: Unreadable libraries:
-01-20 00:31:49.251  7608  7608 F DEBUG   :   NOTE:   /dev/ashmem/jit-zygote-cache (deleted)
-01-20 00:31:49.251  7608  7608 F DEBUG   :       #00 pc 0005e002  /apex/com.android.runtime/lib/bionic/libc.so (abort+138) (BuildId: c39f603f0884af45ff21b717d0cbbdc0)
-01-20 00:31:49.252  7608  7608 F DEBUG   :       #01 pc 004adf05  /apex/com.android.art/lib/libart.so (art::Runtime::Abort(char const*)+1104) (BuildId: 0da3c393a528240dd44d7b122c966541)
-01-20 00:31:49.252  7608  7608 F DEBUG   :       #02 pc 0000ed8f  /apex/com.android.art/lib/libbase.so (android::base::SetAborter(std::__1::function<void (char const*)>&&)::$_0::__invoke(char const*)+46) (BuildId: 7a6420c31c6ea50ab5b29ca5e9704329)
-01-20 00:31:49.252  7608  7608 F DEBUG   :       #03 pc 0000e637  /apex/com.android.art/lib/libbase.so (android::base::LogMessage::~LogMessage()+226) (BuildId: 7a6420c31c6ea50ab5b29ca5e9704329)
-01-20 00:31:49.252  7608  7608 F DEBUG   :       #04 pc 0031aeed  /apex/com.android.art/lib/libart.so (art::jit::Jit::PostZygoteFork()+1364) (BuildId: 0da3c393a528240dd44d7b122c966541)
-01-20 00:31:49.252  7608  7608 F DEBUG   :       #05 pc 004ae949  /apex/com.android.art/lib/libart.so (art::Runtime::PostZygoteFork()+12) (BuildId: 0da3c393a528240dd44d7b122c966541)
-01-20 00:31:49.252  7608  7608 F DEBUG   :       #06 pc 000ac7ad  /apex/com.android.art/lib/libart.so (art_quick_generic_jni_trampoline+44) (BuildId: 0da3c393a528240dd44d7b122c966541)
-01-20 00:31:49.252  7608  7608 F DEBUG   :       #07 pc 02af5bdb  /dev/ashmem/jit-zygote-cache (deleted) (offset 0x2000000) (com.android.internal.os.Zygote.forkAndSpecialize+522)
-01-20 00:31:49.252  7608  7608 F DEBUG   :       #08 pc 029cf66b  /dev/ashmem/jit-zygote-cache (deleted) (offset 0x2000000) (com.android.internal.os.ZygoteConnection.processCommand+1354)
-01-20 00:31:49.252  7608  7608 F DEBUG   :       #09 pc 000a106c  /apex/com.android.art/lib/libart.so (nterp_helper+2908) (BuildId: 0da3c393a528240dd44d7b122c966541)
-01-20 00:31:49.252  7608  7608 F DEBUG   :       #10 pc 005139a2  /system/framework/framework.jar (com.android.internal.os.ZygoteServer.runSelectLoop+602)
-01-20 00:31:49.252  7608  7608 F DEBUG   :       #11 pc 000a1000  /apex/com.android.art/lib/libart.so (nterp_helper+2800) (BuildId: 0da3c393a528240dd44d7b122c966541)
-01-20 00:31:49.252  7608  7608 F DEBUG   :       #12 pc 00512b22  /system/framework/framework.jar (com.android.internal.os.ZygoteInit.main+558)
-01-20 00:31:49.252  7608  7608 F DEBUG   :       #13 pc 000a5375  /apex/com.android.art/lib/libart.so (art_quick_invoke_stub_internal+68) (BuildId: 0da3c393a528240dd44d7b122c966541)
-01-20 00:31:49.252  7608  7608 F DEBUG   :       #14 pc 0056da99  /apex/com.android.art/lib/libart.so (art_quick_invoke_static_stub+254) (BuildId: 0da3c393a528240dd44d7b122c966541)
-01-20 00:31:49.252  7608  7608 F DEBUG   :       #15 pc 0020077d  /apex/com.android.art/lib/libart.so (art::ArtMethod::Invoke(art::Thread*, unsigned int*, unsigned int, art::JValue*, char const*)+160) (BuildId: 0da3c393a528240dd44d7b122c966541)
-01-20 00:31:49.252  7608  7608 F DEBUG   :       #16 pc 004a7719  /apex/com.android.art/lib/libart.so (art::JValue art::InvokeWithVarArgs<_jmethodID*>(art::ScopedObjectAccessAlreadyRunnable const&, _jobject*, _jmethodID*, std::__va_list)+316) (BuildId: 0da3c393a528240dd44d7b122c966541)
-01-20 00:31:49.252  7608  7608 F DEBUG   :       #17 pc 003c8e63  /apex/com.android.art/lib/libart.so (art::JNI<true>::CallStaticVoidMethodV(_JNIEnv*, _jclass*, _jmethodID*, std::__va_list)+374) (BuildId: 0da3c393a528240dd44d7b122c966541)
-01-20 00:31:49.252  7608  7608 F DEBUG   :       #18 pc 0008eda9  /system/lib/libandroid_runtime.so (_JNIEnv::CallStaticVoidMethod(_jclass*, _jmethodID*, ...)+20) (BuildId: 782878ce12182394d3276ac0a63e773f)
-01-20 00:31:49.252  7608  7608 F DEBUG   :       #19 pc 000974b3  /system/lib/libandroid_runtime.so (android::AndroidRuntime::start(char const*, android::Vector<android::String8> const&, bool)+506) (BuildId: 782878ce12182394d3276ac0a63e773f)
-01-20 00:31:49.253  7608  7608 F DEBUG   :       #20 pc 0000255d  /system/bin/app_process32 (main+920) (BuildId: ef65fd4a055c418e28e994799b74c74e)
-01-20 00:31:49.253  7608  7608 F DEBUG   :       #21 pc 0005ac4b  /apex/com.android.runtime/lib/bionic/libc.so (__libc_init+74) (BuildId: c39f603f0884af45ff21b717d0cbbdc0)
