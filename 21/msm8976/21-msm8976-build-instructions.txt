@@ -26,10 +26,13 @@ Put this file into the .repo/local_manifests directory
 
 These instructions WILL CHANGE month to month.
 
-3. setup build environment
+3. setup build environment and get latest git
 
 [code=bash]
 . build/envsetup.sh
+cd .repo/repo
+git pull
+croot
 [/code]
 
 4. Git stash our changes from last month and then reapply later on after full repo sync
@@ -65,7 +68,10 @@ croot
 
 cd .repo/manifests
 git stash --include-untracked
-patch -p1 < ~/Downloads/nov-2024-manifests.patch
+croot
+repo sync --force-sync android
+cd .repo/manifests
+patch -p1 < ~/Downloads/jan-mani-2025.diff
 croot
 [/code]
 
@@ -133,7 +139,7 @@ cd hardware/qcom-caf/wlan
 patch -p1 < ~/Downloads/msm8976-patches/hardware_qcom-caf_wlan.diff
 croot
 cd kernel/samsung/msm8976
-patch -p1 < ~/Downloads/msm8976-patches/kernel_samsung_msm8976.diff
+patch -p1 < ~/Downloads/msm8976-patches/kernel-jan-2025.diff
 croot
 cd system/apex
 patch -p1 < ~/Downloads/msm8976-patches/system_apex.diff

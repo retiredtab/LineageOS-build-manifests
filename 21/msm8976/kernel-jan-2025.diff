@@ -1,0 +1,198 @@
+diff --git a/Makefile b/Makefile
+index cfcff52d..1eadcc64 100644
+--- a/Makefile
++++ b/Makefile
+@@ -117,9 +117,10 @@ ifneq ($(KBUILD_OUTPUT),)
+ # Invoke a second make in the output directory, passing relevant variables
+ # check that the output directory actually exists
+ saved-output := $(KBUILD_OUTPUT)
+-KBUILD_OUTPUT := $(shell cd $(KBUILD_OUTPUT) && /bin/pwd)
++KBUILD_OUTPUT := $(shell mkdir -p $(KBUILD_OUTPUT) && cd $(KBUILD_OUTPUT) \
++								&& /bin/pwd)
+ $(if $(KBUILD_OUTPUT),, \
+-     $(error output directory "$(saved-output)" does not exist))
++     $(error failed to create output directory "$(saved-output)"))
+ 
+ PHONY += $(MAKECMDGOALS) sub-make
+ 
+diff --git a/arch/arm64/configs/gts210vewifi_defconfig b/arch/arm64/configs/gts210vewifi_defconfig
+index 004168ad..71d7df17 100644
+--- a/arch/arm64/configs/gts210vewifi_defconfig
++++ b/arch/arm64/configs/gts210vewifi_defconfig
+@@ -1,3 +1,26 @@
++# needed for
++# system_server: Could not open /proc/config.gz
++# signal 6 (SIGABRT), code -1 (SI_QUEUE), fault addr --------
++# Abort message: 'Check failed: result == OK Kernel configs could not be fetched. b/151092221'
++
++CONFIG_IKCONFIG=y
++CONFIG_IKCONFIG_PROC=y
++CONFIG_PROC_FS=y
++
++# Xbox
++CONFIG_INPUT_JOYSTICK=y
++CONFIG_JOYSTICK_XPAD=y
++CONFIG_JOYSTICK_XPAD_FF=y
++CONFIG_JOYSTICK_XPAD_LEDS=y
++CONFIG_USB_ARCH_HAS_HCD=y
++CONFIG_LEDS_CLASS=y
++
++#
++# Input device support
++#
++CONFIG_INPUT=y
++CONFIG_INPUT_FF_MEMLESS=y
++
+ CONFIG_SYSVIPC=y
+ CONFIG_AUDIT=y
+ CONFIG_NO_HZ=y
+@@ -10,7 +33,7 @@ CONFIG_CPUSETS=y
+ CONFIG_CGROUP_CPUACCT=y
+ CONFIG_RESOURCE_COUNTERS=y
+ CONFIG_CGROUP_SCHED=y
+-CONFIG_RT_GROUP_SCHED=y
++# CONFIG_RT_GROUP_SCHED=y
+ CONFIG_SCHED_HMP=y
+ CONFIG_SCHED_TASK_BEHAVIOR=y
+ CONFIG_NAMESPACES=y
+@@ -543,7 +566,10 @@ CONFIG_ANDROID_LOW_MEMORY_KILLER=y
+ CONFIG_ANDROID_INTF_ALARM_DEV=y
+ CONFIG_ION=y
+ CONFIG_ION_MSM=y
+-CONFIG_VNSWAP=y
++# CONFIG_VNSWAP is not set
++CONFIG_SWAP=y
++CONFIG_ZRAM=y
++CONFIG_ZRAM_LZ4_COMPRESS=y
+ CONFIG_SPS=y
+ CONFIG_USB_BAM=y
+ CONFIG_SPS_SUPPORT_NDP_BAM=y
+diff --git a/arch/arm64/configs/gts28vewifi_defconfig b/arch/arm64/configs/gts28vewifi_defconfig
+index 0449f45e..a7e7573a 100644
+--- a/arch/arm64/configs/gts28vewifi_defconfig
++++ b/arch/arm64/configs/gts28vewifi_defconfig
+@@ -1,3 +1,26 @@
++# needed for
++# system_server: Could not open /proc/config.gz
++# signal 6 (SIGABRT), code -1 (SI_QUEUE), fault addr --------
++# Abort message: 'Check failed: result == OK Kernel configs could not be fetched. b/151092221'
++
++CONFIG_IKCONFIG=y
++CONFIG_IKCONFIG_PROC=y
++CONFIG_PROC_FS=y
++
++# Xbox
++CONFIG_INPUT_JOYSTICK=y
++CONFIG_JOYSTICK_XPAD=y
++CONFIG_JOYSTICK_XPAD_FF=y
++CONFIG_JOYSTICK_XPAD_LEDS=y
++CONFIG_USB_ARCH_HAS_HCD=y
++CONFIG_LEDS_CLASS=y
++
++#
++# Input device support
++#
++CONFIG_INPUT=y
++CONFIG_INPUT_FF_MEMLESS=y
++
+ CONFIG_SYSVIPC=y
+ CONFIG_AUDIT=y
+ CONFIG_NO_HZ=y
+@@ -10,7 +33,7 @@ CONFIG_CPUSETS=y
+ CONFIG_CGROUP_CPUACCT=y
+ CONFIG_RESOURCE_COUNTERS=y
+ CONFIG_CGROUP_SCHED=y
+-CONFIG_RT_GROUP_SCHED=y
++# CONFIG_RT_GROUP_SCHED=y
+ CONFIG_SCHED_HMP=y
+ CONFIG_SCHED_TASK_BEHAVIOR=y
+ CONFIG_NAMESPACES=y
+@@ -543,7 +566,10 @@ CONFIG_ANDROID_LOW_MEMORY_KILLER=y
+ CONFIG_ANDROID_INTF_ALARM_DEV=y
+ CONFIG_ION=y
+ CONFIG_ION_MSM=y
+-CONFIG_VNSWAP=y
++# CONFIG_VNSWAP is not set
++CONFIG_SWAP=y
++CONFIG_ZRAM=y
++CONFIG_ZRAM_LZ4_COMPRESS=y
+ CONFIG_SPS=y
+ CONFIG_USB_BAM=y
+ CONFIG_SPS_SUPPORT_NDP_BAM=y
+diff --git a/net/Kconfig b/net/Kconfig
+index d84c2bcf..f55f0816 100644
+--- a/net/Kconfig
++++ b/net/Kconfig
+@@ -75,7 +75,7 @@ config INET
+ 	  Short answer: say Y.
+ 
+ if INET
+-source "net/wireguard/src/Kconfig"
++# source "net/wireguard/src/Kconfig"
+ source "net/ipv4/Kconfig"
+ source "net/ipv6/Kconfig"
+ source "net/netlabel/Kconfig"
+diff --git a/net/Makefile b/net/Makefile
+index 14bd7a3f..fc89ead7 100644
+--- a/net/Makefile
++++ b/net/Makefile
+@@ -16,7 +16,7 @@ obj-$(CONFIG_NET)		+= $(tmp-y)
+ obj-$(CONFIG_LLC)		+= llc/
+ obj-$(CONFIG_NET)		+= ethernet/ 802/ sched/ netlink/
+ obj-$(CONFIG_NETFILTER)		+= netfilter/
+-obj-$(CONFIG_WIREGUARD)		+= wireguard/src/
++# obj-$(CONFIG_WIREGUARD)		+= wireguard/src/
+ obj-$(CONFIG_INET)		+= ipv4/
+ obj-$(CONFIG_XFRM)		+= xfrm/
+ obj-$(CONFIG_UNIX)		+= unix/
+diff --git a/scripts/Makefile.host b/scripts/Makefile.host
+index 1ac414fd..8c3dc7b2 100644
+--- a/scripts/Makefile.host
++++ b/scripts/Makefile.host
+@@ -112,7 +112,7 @@ hostcxx_flags  = -Wp,-MD,$(depfile) $(__hostcxx_flags)
+ # Create executable from a single .c file
+ # host-csingle -> Executable
+ quiet_cmd_host-csingle 	= HOSTCC  $@
+-      cmd_host-csingle	= $(HOSTCC) $(hostc_flags) -o $@ $< \
++      cmd_host-csingle	= $(HOSTCC) $(hostc_flags) $(HOSTLDFLAGS) -o $@ $< \
+ 	  	$(HOST_LOADLIBES) $(HOSTLOADLIBES_$(@F))
+ $(host-csingle): $(obj)/%: $(src)/%.c FORCE
+ 	$(call if_changed_dep,host-csingle)
+diff --git a/scripts/dtc/dtc-lexer.l b/scripts/dtc/dtc-lexer.l
+index 3b41bfca..9b9c29e6 100644
+--- a/scripts/dtc/dtc-lexer.l
++++ b/scripts/dtc/dtc-lexer.l
+@@ -39,7 +39,7 @@ LINECOMMENT	"//".*\n
+ #include "srcpos.h"
+ #include "dtc-parser.tab.h"
+ 
+-YYLTYPE yylloc;
++extern YYLTYPE yylloc;
+ 
+ /* CAUTION: this will stop working if we ever use yyless() or yyunput() */
+ #define	YY_USER_ACTION \
+diff --git a/scripts/dtc/dtc-lexer.lex.c_shipped b/scripts/dtc/dtc-lexer.lex.c_shipped
+index 2d30f417..d0eb405c 100644
+--- a/scripts/dtc/dtc-lexer.lex.c_shipped
++++ b/scripts/dtc/dtc-lexer.lex.c_shipped
+@@ -637,7 +637,7 @@ char *yytext;
+ #include "srcpos.h"
+ #include "dtc-parser.tab.h"
+ 
+-YYLTYPE yylloc;
++extern YYLTYPE yylloc;
+ 
+ /* CAUTION: this will stop working if we ever use yyless() or yyunput() */
+ #define	YY_USER_ACTION \
+diff --git a/scripts/extract-ikconfig b/scripts/extract-ikconfig
+index e1862429..3b42f255 100755
+--- a/scripts/extract-ikconfig
++++ b/scripts/extract-ikconfig
+@@ -61,6 +61,7 @@ try_decompress '\3757zXZ\000' abcde unxz
+ try_decompress 'BZh'          xy    bunzip2
+ try_decompress '\135\0\0\0'   xxx   unlzma
+ try_decompress '\211\114\132' xy    'lzop -d'
++try_decompress '\002\041\114\030' xyy 'lz4 -d -l'
+ 
+ # Bail out:
+ echo "$me: Cannot find kernel config." >&2

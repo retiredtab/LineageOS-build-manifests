@@ -1,0 +1,174 @@
+We are using LineageOS-UL for the repos.  See instructions on how to initialize
+and get started at
+
+https://github.com/LineageOS-UL/android
+
+repo init -u https://github.com/LineageOS-UL/android.git -b lineage-21.0 --git-lfs --depth=1
+
+=== MONTHLY ===
+
+Here are the instructions on how to make Nov 1st security patches and possibly beyond for LineageOS 21.0.
+
+These instructions WILL CHANGE month to month.
+
+1. setup build environment and get latest git binary
+
+[code=bash]
+. build/envsetup.sh
+cd .repo/repo
+git pull
+croot
+[/code]
+
+2. Since UL repos have not been updated in a few months now, we will stop using the UL repos and use the original LineageOS repos and apply the UL patches manually via git am command.  Thus, we need to change our .repo/manifests default.xml and snippets/losul.xml
+files to reflect the above.
+
+[code=bash]
+
+# stash all our changes so we get the latest repo update, then reapply patches later on
+# patches made via git am are automatically removed with repo sync --force-sync
+
+cd hardware/lineage/interfaces/
+git stash --include-untracked
+croot
+cd hardware/samsung/
+git stash --include-untracked
+croot
+cd hardware/samsung_slsi/exynos/
+git stash --include-untracked
+croot
+cd hardware/samsung_slsi/exynos5433/
+git stash --include-untracked
+croot
+cd vendor/lineage
+git stash --include-untracked
+croot
+
+[/code]
+
+3. repo sync everything
+
+[code=bash]
+
+cd .repo/manifests
+# stash any changes from last time and use the new Jan 2025 patch file
+git stash --include-untracked
+croot
+# sync latest manifests
+repo sync --force-sync android
+cd .repo/manifests
+# put our changes to manifests
+patch -p1 < ~/Downloads/21-ul/jan-mani-2025.diff
+croot
+
+# espeak optional
+repo sync --force-sync ; espeak done ;
+
+[/code]
+
+4. Now we have to apply the UL patches.
+
+[code=bash]
+# Reapply UL patches below
+# All patches are at
+# https://github.com/retiredtab/LineageOS-build-manifests/tree/main/21/UL-patches-2024
+
+###### LineageOS-UL SPECIFIC repo patches ######
+
+cd build/make
+git am ~/Downloads/21-ul/build-aug-2024.patch
+croot
+
+cd packages/modules/Bluetooth
+git am ~/Downloads/21-ul/packages_modules_Bluetooth-aug-2024.patch
+croot
+
+cd frameworks/av
+git am ~/Downloads/21-ul/frameworks-av-sept-2024.patch
+croot
+
+cd frameworks/base
+git am ~/Downloads/21-ul/frameworks-base-aug-2024.patch
+croot
+
+cd frameworks/native
+git am ~/Downloads/21-ul/frameworks_native_sept-2024.patch
+croot
+
+cd hardware/interfaces
+git am ~/Downloads/21-ul/hardware_interfaces-aug-2024.patch
+croot
+
+cd vendor/lineage
+patch -p1 < ~/Downloads/21-ul/vendor_lineage-nov-2024.diff
+patch -p1 < ~/Downloads/21-ul/vendor_lineage_skip_abi_checks.patch
+croot
+
+# needed for fix compiler error
+
+cd hardware/lineage/interfaces/
+patch -p1 < ~/Downloads/21-ul/hardware_lineage_interfaces.diff
+croot
+
+###### DEVICE SPECIFIC patches ######
+
+# needed for our 5433 devices
+
+cd hardware/samsung/
+patch -p1 < ~/Downloads/5433-patches/hardware_samsung.diff
+croot
+cd hardware/samsung_slsi/exynos/
+patch -p1 < ~/Downloads/5433-patches/hardware_samsung_slsi_exynos.diff
+croot
+cd hardware/samsung_slsi/exynos5433
+patch -p1 < ~/Downloads/5433-patches/hardware_samsung_slsi_exynos5433.diff
+croot
+
+[/code]
+
+5. # for samsung_slsi libfimg4x: Fix a -Wunreachable-code-loop-increment compilation error
+
+[code=bash]
+repopick -f 331661
+[/code]
+
+# rerun . build/envsetup.sh just to be safe to make sure we got all environment changes
+
+. build/envsetup.sh
+
+6. Breakfast and Brunch as usual.
+
+
+
+01-20 00:03:39.823  4296  4296 E dex2oat32: Error reading named image component header for /system/framework/boot.art, error: ValidateOatFile found read barrier state mismatch (oat file: false, runtime: true)
+01-20 00:03:39.823  4296  4296 E dex2oat32: Could not create image space with image file '/system/framework/boot.art:/system/framework/boot-framework-adservices.art'. Attempting to fall back to imageless running. Error was: ValidateOatFile found read barrier state mismatch (oat file: false, runtime: true)
+
+
+01-20 00:31:49.251  7608  7608 F DEBUG   :   NOTE: Function names and BuildId information is missing for some frames due
+01-20 00:31:49.251  7608  7608 F DEBUG   :   NOTE: to unreadable libraries. For unwinds of apps, only shared libraries
+01-20 00:31:49.251  7608  7608 F DEBUG   :   NOTE: found under the lib/ directory are readable.
+01-20 00:31:49.251  7608  7608 F DEBUG   :   NOTE: On this device, run setenforce 0 to make the libraries readable.
+01-20 00:31:49.251  7608  7608 F DEBUG   :   NOTE: Unreadable libraries:
+01-20 00:31:49.251  7608  7608 F DEBUG   :   NOTE:   /dev/ashmem/jit-zygote-cache (deleted)
+01-20 00:31:49.251  7608  7608 F DEBUG   :       #00 pc 0005e002  /apex/com.android.runtime/lib/bionic/libc.so (abort+138) (BuildId: c39f603f0884af45ff21b717d0cbbdc0)
+01-20 00:31:49.252  7608  7608 F DEBUG   :       #01 pc 004adf05  /apex/com.android.art/lib/libart.so (art::Runtime::Abort(char const*)+1104) (BuildId: 0da3c393a528240dd44d7b122c966541)
+01-20 00:31:49.252  7608  7608 F DEBUG   :       #02 pc 0000ed8f  /apex/com.android.art/lib/libbase.so (android::base::SetAborter(std::__1::function<void (char const*)>&&)::$_0::__invoke(char const*)+46) (BuildId: 7a6420c31c6ea50ab5b29ca5e9704329)
+01-20 00:31:49.252  7608  7608 F DEBUG   :       #03 pc 0000e637  /apex/com.android.art/lib/libbase.so (android::base::LogMessage::~LogMessage()+226) (BuildId: 7a6420c31c6ea50ab5b29ca5e9704329)
+01-20 00:31:49.252  7608  7608 F DEBUG   :       #04 pc 0031aeed  /apex/com.android.art/lib/libart.so (art::jit::Jit::PostZygoteFork()+1364) (BuildId: 0da3c393a528240dd44d7b122c966541)
+01-20 00:31:49.252  7608  7608 F DEBUG   :       #05 pc 004ae949  /apex/com.android.art/lib/libart.so (art::Runtime::PostZygoteFork()+12) (BuildId: 0da3c393a528240dd44d7b122c966541)
+01-20 00:31:49.252  7608  7608 F DEBUG   :       #06 pc 000ac7ad  /apex/com.android.art/lib/libart.so (art_quick_generic_jni_trampoline+44) (BuildId: 0da3c393a528240dd44d7b122c966541)
+01-20 00:31:49.252  7608  7608 F DEBUG   :       #07 pc 02af5bdb  /dev/ashmem/jit-zygote-cache (deleted) (offset 0x2000000) (com.android.internal.os.Zygote.forkAndSpecialize+522)
+01-20 00:31:49.252  7608  7608 F DEBUG   :       #08 pc 029cf66b  /dev/ashmem/jit-zygote-cache (deleted) (offset 0x2000000) (com.android.internal.os.ZygoteConnection.processCommand+1354)
+01-20 00:31:49.252  7608  7608 F DEBUG   :       #09 pc 000a106c  /apex/com.android.art/lib/libart.so (nterp_helper+2908) (BuildId: 0da3c393a528240dd44d7b122c966541)
+01-20 00:31:49.252  7608  7608 F DEBUG   :       #10 pc 005139a2  /system/framework/framework.jar (com.android.internal.os.ZygoteServer.runSelectLoop+602)
+01-20 00:31:49.252  7608  7608 F DEBUG   :       #11 pc 000a1000  /apex/com.android.art/lib/libart.so (nterp_helper+2800) (BuildId: 0da3c393a528240dd44d7b122c966541)
+01-20 00:31:49.252  7608  7608 F DEBUG   :       #12 pc 00512b22  /system/framework/framework.jar (com.android.internal.os.ZygoteInit.main+558)
+01-20 00:31:49.252  7608  7608 F DEBUG   :       #13 pc 000a5375  /apex/com.android.art/lib/libart.so (art_quick_invoke_stub_internal+68) (BuildId: 0da3c393a528240dd44d7b122c966541)
+01-20 00:31:49.252  7608  7608 F DEBUG   :       #14 pc 0056da99  /apex/com.android.art/lib/libart.so (art_quick_invoke_static_stub+254) (BuildId: 0da3c393a528240dd44d7b122c966541)
+01-20 00:31:49.252  7608  7608 F DEBUG   :       #15 pc 0020077d  /apex/com.android.art/lib/libart.so (art::ArtMethod::Invoke(art::Thread*, unsigned int*, unsigned int, art::JValue*, char const*)+160) (BuildId: 0da3c393a528240dd44d7b122c966541)
+01-20 00:31:49.252  7608  7608 F DEBUG   :       #16 pc 004a7719  /apex/com.android.art/lib/libart.so (art::JValue art::InvokeWithVarArgs<_jmethodID*>(art::ScopedObjectAccessAlreadyRunnable const&, _jobject*, _jmethodID*, std::__va_list)+316) (BuildId: 0da3c393a528240dd44d7b122c966541)
+01-20 00:31:49.252  7608  7608 F DEBUG   :       #17 pc 003c8e63  /apex/com.android.art/lib/libart.so (art::JNI<true>::CallStaticVoidMethodV(_JNIEnv*, _jclass*, _jmethodID*, std::__va_list)+374) (BuildId: 0da3c393a528240dd44d7b122c966541)
+01-20 00:31:49.252  7608  7608 F DEBUG   :       #18 pc 0008eda9  /system/lib/libandroid_runtime.so (_JNIEnv::CallStaticVoidMethod(_jclass*, _jmethodID*, ...)+20) (BuildId: 782878ce12182394d3276ac0a63e773f)
+01-20 00:31:49.252  7608  7608 F DEBUG   :       #19 pc 000974b3  /system/lib/libandroid_runtime.so (android::AndroidRuntime::start(char const*, android::Vector<android::String8> const&, bool)+506) (BuildId: 782878ce12182394d3276ac0a63e773f)
+01-20 00:31:49.253  7608  7608 F DEBUG   :       #20 pc 0000255d  /system/bin/app_process32 (main+920) (BuildId: ef65fd4a055c418e28e994799b74c74e)
+01-20 00:31:49.253  7608  7608 F DEBUG   :       #21 pc 0005ac4b  /apex/com.android.runtime/lib/bionic/libc.so (__libc_init+74) (BuildId: c39f603f0884af45ff21b717d0cbbdc0)
