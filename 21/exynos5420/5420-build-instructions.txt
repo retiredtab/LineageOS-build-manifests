@@ -71,21 +71,20 @@ cd system/vold
 git stash --include-untracked
 croot
 
-# stash any changes from last time and use the nov 2024 patch file
-
 cd .repo/manifests
+# stash any changes from last time and use the new Jan 2025 patch file
 git stash --include-untracked
-patch -p1 < ~/Downloads/21-ul/nov-2024-manifests.patch
+croot
+# sync latest manifests
+repo sync --force-sync android
+cd .repo/manifests
+# put our changes to manifests
+patch -p1 < ~/Downloads/21-ul/jan-mani-2025.diff
 croot
 
-5. repo sync everything
+5. sync everthing, espeak is optional
 
-repo sync --force-sync
-
-# Dec 1st patches not yet merged so pick them manually.
-# Depending on when you sync, these patches may or may not be merged.
-
-repopick -t U_asb_2024-12
+repo sync --force-sync ; espeak done ;
 
 6. Download the patches from
 
