@@ -63,7 +63,7 @@ croot
 repo sync --force-sync android
 
 cd .repo/manifests
-patch -p1 < ~/Downloads/20-ul/20-manifests-dec-2024.diff
+patch -p1 < ~/Downloads/20-ul/20-manifests-jan-2025.diff
 croot
 
 4. repo sync everything - espeak is optional
