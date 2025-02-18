@@ -109,7 +109,7 @@ croot
 # Patch packages/modules/Bluetooth so Bluetooth won't crash
 
 cd packages/modules/Bluetooth
-patch -p1 < ~/Downloads/msm8974-patches/packages_modules_Bluetooth-dec-2024.diff
+patch -p1 < ~/Downloads/msm8974-patches/packages_modules_Bluetooth-feb-2025.diff
 croot
 
 # Patch to fix wifi compiler error

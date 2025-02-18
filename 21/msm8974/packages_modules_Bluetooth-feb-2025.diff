@@ -1,0 +1,93 @@
+diff --git a/system/bta/dm/bta_dm_act.cc b/system/bta/dm/bta_dm_act.cc
+index d66f684..a8d7c55 100644
+--- a/system/bta/dm/bta_dm_act.cc
++++ b/system/bta/dm/bta_dm_act.cc
+@@ -125,6 +125,10 @@ static const char kPropertySniffOffloadEnabled[] =
+ #define PROPERTY_PAGE_TIMEOUT "bluetooth.core.classic.page_timeout"
+ #endif
+ 
++#ifndef PROPERTY_BLE_VND_SUPPORTED
++#define PROPERTY_BLE_VND_SUPPORTED "bluetooth.core.le.vendor_capabilities.enabled"
++#endif
++
+ namespace {
+ 
+ struct WaitForAllAclConnectionsToDrain {
+@@ -268,7 +272,7 @@ void BTA_dm_on_hw_on() {
+       osi_property_get_int32(PROPERTY_PAGE_TIMEOUT,
+                              p_bta_dm_cfg->page_timeout));
+ 
+-  if (ble_vnd_is_included()) {
++  if (osi_property_get_bool(PROPERTY_BLE_VND_SUPPORTED, true)) {
+     get_btm_client_interface().ble.BTM_BleReadControllerFeatures(
+         bta_dm_ctrl_features_rd_cmpl_cback);
+   } else {
+diff --git a/system/stack/btm/btm_ble_gap.cc b/system/stack/btm/btm_ble_gap.cc
+index 577e5b3..2fa818c 100644
+--- a/system/stack/btm/btm_ble_gap.cc
++++ b/system/stack/btm/btm_ble_gap.cc
+@@ -92,6 +92,10 @@ void btm_ble_adv_filter_init(void);
+ 
+ #define BTM_VSC_CHIP_CAPABILITY_RSP_LEN_S_RELEASE 25
+ 
++#ifndef PROPERTY_BLE_VND_SUPPORTED
++#define PROPERTY_BLE_VND_SUPPORTED "bluetooth.core.le.vendor_capabilities.enabled"
++#endif
++
+ /* Sysprop paths for scan parameters */
+ static const char kPropertyInquiryScanInterval[] =
+     "bluetooth.core.le.inquiry_scan_interval";
+@@ -702,6 +706,10 @@ static void btm_ble_vendor_capability_vsc_cmpl_cback(
+     tBTM_VSC_CMPL* p_vcs_cplt_params) {
+   log::verbose("");
+ 
++  if (!osi_property_get_bool(PROPERTY_BLE_VND_SUPPORTED, true)) {
++    return;
++  }
++
+   /* Check status of command complete event */
+   CHECK(p_vcs_cplt_params->opcode == HCI_BLE_VENDOR_CAP);
+   CHECK(p_vcs_cplt_params->param_len > 0);
+@@ -846,11 +854,12 @@ void BTM_BleGetDynamicAudioBuffer(
+  *
+  ******************************************************************************/
+ void BTM_BleReadControllerFeatures(tBTM_BLE_CTRL_FEATURES_CBACK* p_vsc_cback) {
+-  if (!ble_vnd_is_included()) return;
++  if (osi_property_get_bool(PROPERTY_BLE_VND_SUPPORTED, true)) {
++      if (!ble_vnd_is_included()) return;
+ 
+-  if (btm_cb.cmn_ble_vsc_cb.values_read) return;
++	if (btm_cb.cmn_ble_vsc_cb.values_read) return;
+ 
+-  log::verbose("BTM_BleReadControllerFeatures");
++	log::verbose("BTM_BleReadControllerFeatures");
+ 
+   if (IS_FLAG_ENABLED(report_vsc_data_from_the_gd_controller)) {
+     btm_cb.cmn_ble_vsc_cb.values_read = true;
+@@ -936,9 +945,13 @@ void BTM_BleReadControllerFeatures(tBTM_BLE_CTRL_FEATURES_CBACK* p_vsc_cback) {
+       p_vsc_cback(tHCI_STATUS::HCI_SUCCESS);
+     }
+   } else {
+-    p_ctrl_le_feature_rd_cmpl_cback = p_vsc_cback;
+-    BTM_VendorSpecificCommand(HCI_BLE_VENDOR_CAP, 0, NULL,
++		p_ctrl_le_feature_rd_cmpl_cback = p_vsc_cback;
++		BTM_VendorSpecificCommand(HCI_BLE_VENDOR_CAP, 0, NULL,
+                               btm_ble_vendor_capability_vsc_cmpl_cback);
++	}
++  } else {
++    UNUSED(p_vsc_cback);
++    return;
+   }
+ }
+ 
+@@ -3192,8 +3205,8 @@ void btm_ble_init(void) {
+       alarm_new("btm_ble_addr.refresh_raddr_timer");
+   btm_ble_pa_sync_cb = {};
+   sync_timeout_alarm = alarm_new("btm.sync_start_task");
+-  if (!ble_vnd_is_included()) {
+-    btm_ble_adv_filter_init();
++  if (osi_property_get_bool(PROPERTY_BLE_VND_SUPPORTED, true)) {
++      btm_ble_adv_filter_init();
+   }
+ }
+ 
