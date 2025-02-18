@@ -51,7 +51,7 @@ croot
 [code=bash]
 
 cd .repo/manifests
-# stash any changes from last time and use the new Jan 2025 patch file
+# stash any changes from last time and use the new manifest patch file
 git stash --include-untracked
 croot
 # sync latest manifests
