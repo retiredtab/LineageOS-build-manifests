@@ -12,7 +12,12 @@ the .repo/local_manifests directory
 
 # cd into your 21 code directory
 
+# setup build environment and get latest git binary
+
 . build/envsetup.sh
+cd .repo/repo
+git pull
+croot
 
 cd packages/modules/Bluetooth
 git stash --include-untracked
@@ -41,15 +46,18 @@ croot
 4. repo sync everything
 
 cd .repo/manifests
-# stash any changes from last time and use the new Nov 2024 patch file
+# stash any changes from last time and use the new manifest patch file
 git stash --include-untracked
-patch -p1 < ~/Downloads/21-ul/nov-2024-manifests.patch
+croot
+# sync latest manifests
+repo sync --force-sync android
+cd .repo/manifests
+# put our changes to manifests
+patch -p1 < ~/Downloads/21-ul/feb-mani-2025.diff
 croot
 
-repo sync --force-sync
-
-# Dec 1st patches not yet merged so pick them manually.
-repopick -t U_asb_2024-12
+# espeak optional
+repo sync --force-sync ; espeak done ;
 
 5. Now we have to apply the UL patches.
 
@@ -89,10 +97,6 @@ patch -p1 < ~/Downloads/21-ul/vendor_lineage-nov-2024.diff
 patch -p1 < ~/Downloads/21-ul/vendor_lineage_skip_abi_checks.patch
 croot
 
-# we need to rerun . build/envsetup.sh to get the skip abi checks patch above.
-
-. build/envsetup.sh
-
 # needed for fix compiler error
 
 cd hardware/lineage/interfaces/
@@ -126,6 +130,9 @@ cd system/vold
 patch -p1 < ~/Downloads/msm8974-patches/system_vold.diff
 croot
 
+# we need to rerun . build/envsetup.sh to get the skip abi checks patch above.
+
+. build/envsetup.sh
 
 9. breakfast mondrianwifi
 
