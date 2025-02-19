@@ -72,14 +72,14 @@ git stash --include-untracked
 croot
 
 cd .repo/manifests
-# stash any changes from last time and use the new Jan 2025 patch file
+# stash any changes from last time and use the new mainfest patch file
 git stash --include-untracked
 croot
 # sync latest manifests
 repo sync --force-sync android
 cd .repo/manifests
 # put our changes to manifests
-patch -p1 < ~/Downloads/21-ul/jan-mani-2025.diff
+patch -p1 < ~/Downloads/21-ul/feb-mani-2025.diff
 croot
 
 5. sync everthing, espeak is optional
