@@ -64,21 +64,21 @@ cd hardware/lineage/interfaces/
 git stash --include-untracked
 croot
 
-# stash any changes from last time and use the sept 2024 patch file
+# stash any changes from last time and use the latest manifest patch file
 
 cd .repo/manifests
 git stash --include-untracked
 croot
 repo sync --force-sync android
 cd .repo/manifests
-patch -p1 < ~/Downloads/jan-mani-2025.diff
+patch -p1 < ~/Downloads/21-ul/feb-mani-2025.diff
 croot
 [/code]
 
-5. repo sync everything
+5. repo sync everything - espeak is optional
 
 [code=bash]
-repo sync -c -j$(nproc --all) --force-sync --no-clone-bundle --no-tags
+repo sync --force-sync ; espeak "sync done"
 [/code]
 
 6. Download the patches from
