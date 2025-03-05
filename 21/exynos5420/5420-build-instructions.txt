@@ -79,12 +79,15 @@ croot
 repo sync --force-sync android
 cd .repo/manifests
 # put our changes to manifests
-patch -p1 < ~/Downloads/21-ul/feb-mani-2025.diff
+patch -p1 < ~/Downloads/21-ul/mar-mani-2025.diff
 croot
 
 5. sync everthing, espeak is optional
 
 repo sync --force-sync ; espeak done ;
+
+# As of this writing, the March 1, 2025 patches were not yet merged via gerrit, so we pick them manually.
+repopick -t U_asb_2025-03
 
 6. Download the patches from
 
