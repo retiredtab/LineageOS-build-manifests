@@ -21,11 +21,14 @@ croot
 repo sync --force-sync android
 
 cd .repo/manifests
-patch -p1 < ~/Downloads/20-ul/20-manifests-jan-2025.diff
+patch -p1 < ~/Downloads/20-ul/20-manifests-mar-2025.diff
 croot
 
-# Start full sync
-repo sync --force-sync
+# espeak optional
+repo sync --force-sync ; espeak "sync done" ;
+
+# As of this writing, the March 5, 2025 patches were not yet merged via gerrit, so we pick them manually.
+repopick -t T_asb_2025-03
 
 # Now re-apply all our LineageOS-UL patches
 
