@@ -71,7 +71,7 @@ git stash --include-untracked
 croot
 repo sync --force-sync android
 cd .repo/manifests
-patch -p1 < ~/Downloads/21-ul/feb-mani-2025.diff
+patch -p1 < ~/Downloads/21-ul/mar-mani-2025.diff
 croot
 [/code]
 
