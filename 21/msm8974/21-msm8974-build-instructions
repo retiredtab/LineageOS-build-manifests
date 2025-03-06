@@ -53,7 +53,7 @@ croot
 repo sync --force-sync android
 cd .repo/manifests
 # put our changes to manifests
-patch -p1 < ~/Downloads/21-ul/feb-mani-2025.diff
+patch -p1 < ~/Downloads/21-ul/mar-mani-2025.diff
 croot
 
 # espeak optional
