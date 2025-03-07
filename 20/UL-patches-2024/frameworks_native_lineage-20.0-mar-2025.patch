@@ -1,0 +1,911 @@
+From edd7c92d908590ea035b224d428b617661db535d Mon Sep 17 00:00:00 2001
+From: Arne Coucheron <arco68@gmail.com>
+Date: Fri, 6 Nov 2020 15:22:40 -0500
+Subject: [PATCH 01/21] SurfaceFlinger: Don't cleanup resources from previous
+ frame
+
+Causes bad lag on some legacy devices.
+
+Change-Id: I89913d214c7377c73bd307696dbf9aac2f9a5c0a
+---
+ services/surfaceflinger/Android.bp         | 1 +
+ services/surfaceflinger/SurfaceFlinger.cpp | 2 ++
+ 2 files changed, 3 insertions(+)
+
+diff --git a/services/surfaceflinger/Android.bp b/services/surfaceflinger/Android.bp
+index 7548380a589..6396063d4e4 100644
+--- a/services/surfaceflinger/Android.bp
++++ b/services/surfaceflinger/Android.bp
+@@ -24,6 +24,7 @@ cc_defaults {
+ cc_defaults {
+     name: "libsurfaceflinger_defaults",
+     defaults: [
++        "disable_postrender_cleanup_defaults",
+         "surfaceflinger_defaults",
+         "skia_renderengine_deps",
+         "surfaceflinger_qcom_ext_defaults",
+diff --git a/services/surfaceflinger/SurfaceFlinger.cpp b/services/surfaceflinger/SurfaceFlinger.cpp
+index 20e1f6b935b..1bc2747645c 100644
+--- a/services/surfaceflinger/SurfaceFlinger.cpp
++++ b/services/surfaceflinger/SurfaceFlinger.cpp
+@@ -2604,8 +2604,10 @@ void SurfaceFlinger::postComposition() {
+     }
+     getBE().mLastSwapTime = currentTime;
+ 
++#ifndef DISABLE_POSTRENDER_CLEANUP
+     // Cleanup any outstanding resources due to rendering a prior frame.
+     getRenderEngine().cleanupPostRender();
++#endif
+ 
+     {
+         std::lock_guard lock(mTexturePoolMutex);
+
+From 2456bab333f9fdb4e8d1ced7b88b835ec1ba756d Mon Sep 17 00:00:00 2001
+From: Khalvat-M <mmba313@gmail.com>
+Date: Tue, 13 Sep 2022 11:56:41 +0430
+Subject: [PATCH 02/21] SurfaceFlinger: Don't cleanup resources from previous
+ frame on display
+
+we have this again ha ha
+
+Change-Id: I3ffe5247efdf5053a8ae5b9b43d3cdff1272a1fe
+---
+ services/surfaceflinger/SurfaceFlinger.cpp | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/services/surfaceflinger/SurfaceFlinger.cpp b/services/surfaceflinger/SurfaceFlinger.cpp
+index 1bc2747645c..e13bf551b91 100644
+--- a/services/surfaceflinger/SurfaceFlinger.cpp
++++ b/services/surfaceflinger/SurfaceFlinger.cpp
+@@ -2585,7 +2585,9 @@ void SurfaceFlinger::postComposition() {
+     mTimeStats->recordDisplayEventConnectionCount(sfConnections + appConnections);
+ 
+     if (isDisplayConnected && !display->isPoweredOn()) {
++#ifndef DISABLE_POSTRENDER_CLEANUP
+         getRenderEngine().cleanupPostRender();
++#endif
+         return;
+     }
+ 
+
+From dff705049de26e5a6aa8ee1bbcc8e55c123981ec Mon Sep 17 00:00:00 2001
+From: nyyu <mail@nyyu.dev>
+Date: Mon, 29 Aug 2022 21:55:50 +0200
+Subject: [PATCH 03/21] SurfaceFlinger: Don't cleanup resources from previous
+ frame on virtual display
+
+Causes bad lag on some legacy devices while WFD
+---
+ services/surfaceflinger/SurfaceFlinger.cpp | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/services/surfaceflinger/SurfaceFlinger.cpp b/services/surfaceflinger/SurfaceFlinger.cpp
+index e13bf551b91..59406ea9830 100644
+--- a/services/surfaceflinger/SurfaceFlinger.cpp
++++ b/services/surfaceflinger/SurfaceFlinger.cpp
+@@ -3071,7 +3071,9 @@ void SurfaceFlinger::processDisplayChanged(const wp<IBinder>& displayToken,
+ 
+     // Recreate the DisplayDevice if the surface or sequence ID changed.
+     if (currentBinder != drawingBinder || currentState.sequenceId != drawingState.sequenceId) {
++#ifndef DISABLE_POSTRENDER_CLEANUP
+         getRenderEngine().cleanFramebufferCache();
++#endif
+ 
+         if (const auto display = getDisplayDeviceLocked(displayToken)) {
+             display->disconnect();
+
+From 0f9dce7832f015a30d50c98f71c69f7ff9ea237b Mon Sep 17 00:00:00 2001
+From: binzhang <binzhang@codeaurora.org>
+Date: Fri, 17 Sep 2021 12:56:50 +0800
+Subject: [PATCH 04/21] sf: avoiding unnecessary frame skip to reduce janks.
+
+The candidate of presnet fence is switched dynamically between front/back buffer, based on current design, it will introudce in big side effect especially for app launching, app resume cases, sometimes the timestamp of the candidate fence is not signaled, but the other candidate has fence signaled already. Then previous logic is not well handled to pick up theright presnet fence candidate. Then frame is skiped.
+
+This change is to use the legacy logic to pick up fence candidate. It can avoid such abnormal frame skip behavior.
+
+Change-Id: I055942d9ae9ac6c96eba403aa4bc1979cf128ce8
+CRs-Fixed: 3035044
+Signed-off-by: DarkJoker360 <simoespo159@gmail.com>
+---
+ services/surfaceflinger/SurfaceFlinger.cpp | 7 ++-----
+ 1 file changed, 2 insertions(+), 5 deletions(-)
+
+diff --git a/services/surfaceflinger/SurfaceFlinger.cpp b/services/surfaceflinger/SurfaceFlinger.cpp
+index 59406ea9830..faaff26431d 100644
+--- a/services/surfaceflinger/SurfaceFlinger.cpp
++++ b/services/surfaceflinger/SurfaceFlinger.cpp
+@@ -1967,11 +1967,8 @@ void SurfaceFlinger::setVsyncEnabled(bool enabled) {
+ }
+ 
+ SurfaceFlinger::FenceWithFenceTime SurfaceFlinger::previousFrameFence() {
+-    const auto now = systemTime();
+-    const auto vsyncPeriod = mScheduler->getDisplayStatInfo(now).vsyncPeriod;
+-    const bool expectedPresentTimeIsTheNextVsync = mExpectedPresentTime - now <= vsyncPeriod;
+-    return expectedPresentTimeIsTheNextVsync ? mPreviousPresentFences[0]
+-                                             : mPreviousPresentFences[1];
++     return mVsyncModulator->getVsyncConfig().sfOffset >= 0 ? mPreviousPresentFences[0]
++                                                           : mPreviousPresentFences[1];
+ }
+ 
+ bool SurfaceFlinger::previousFramePending(int graceTimeMs) {
+
+From cc12f58c18ac012907b98b7e161cb3f1ae1a3d34 Mon Sep 17 00:00:00 2001
+From: ivanmeler <i_ivan@windowslive.com>
+Date: Tue, 23 Aug 2022 21:26:45 +0000
+Subject: [PATCH 05/21] Disable gpu service
+
+Just comment it out whole we cant use it
+---
+ services/gpuservice/gpuservice.rc | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/services/gpuservice/gpuservice.rc b/services/gpuservice/gpuservice.rc
+index 0da8bd3812f..b5b271402db 100644
+--- a/services/gpuservice/gpuservice.rc
++++ b/services/gpuservice/gpuservice.rc
+@@ -2,3 +2,4 @@ service gpu /system/bin/gpuservice
+     class core
+     user gpu_service
+     group graphics readtracefs
++    disabled
+
+From 6c3d29dfd27ca1fa541a3bde0cefc7472dafc213 Mon Sep 17 00:00:00 2001
+From: Danny Lin <danny@kdrag0n.dev>
+Date: Mon, 5 Apr 2021 22:26:06 -0700
+Subject: [PATCH 06/21] libbinder: Suppress log spam when unlinking death
+ recipients
+
+Unlinking death recipients (from linkToDeath) is a normal part of Binder
+operation, and doing it when a BpBinder's refcount has reached 0 is not
+much different.
+
+This log message is constantly spamming when swiping as part of a back
+navigation gesture:
+
+04-05 22:29:41.402   655  3888 I BpBinder: onLastStrongRef automatically unlinking death recipients: <uncached descriptor>
+04-05 22:29:41.413   655  3888 I BpBinder: onLastStrongRef automatically unlinking death recipients: <uncached descriptor>
+04-05 22:29:41.424   655  3888 I BpBinder: onLastStrongRef automatically unlinking death recipients: <uncached descriptor>
+04-05 22:29:41.435   655   681 I BpBinder: onLastStrongRef automatically unlinking death recipients: <uncached descriptor>
+04-05 22:29:41.447   655  3888 I BpBinder: onLastStrongRef automatically unlinking death recipients: <uncached descriptor>
+
+Logging is relatively expensive on Android and the log spam isn't
+useful, so suppress this log message by setting it to the verbose log
+level.
+
+Change-Id: I774d0c59ca6f70a4e2ed33b9fac3fb5b86d8ff0a
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ libs/binder/BpBinder.cpp | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/libs/binder/BpBinder.cpp b/libs/binder/BpBinder.cpp
+index 921e57c7bf4..3df66c1848a 100644
+--- a/libs/binder/BpBinder.cpp
++++ b/libs/binder/BpBinder.cpp
+@@ -530,7 +530,7 @@ void BpBinder::onLastStrongRef(const void* /*id*/)
+     Vector<Obituary>* obits = mObituaries;
+     if(obits != nullptr) {
+         if (!obits->isEmpty()) {
+-            ALOGI("onLastStrongRef automatically unlinking death recipients: %s",
++            ALOGV("onLastStrongRef automatically unlinking death recipients: %s",
+                   mDescriptorCache.size() ? String8(mDescriptorCache).c_str() : "<uncached descriptor>");
+         }
+ 
+
+From 49f5aba585f76ff7c1687a7c3603aa8e67b22ba4 Mon Sep 17 00:00:00 2001
+From: Steven Moreland <smoreland@google.com>
+Date: Wed, 18 May 2022 22:04:49 +0000
+Subject: [PATCH 07/21] libbinder: O_CLOFORK
+
+You can't use binder after forking, so we can drop the FD. The binder
+driver doesn't support this (once the FD is open, we would need to
+open a new context in the child process). So, the userspace API would
+need to handle resetting all state. However, in general, handling this
+for multi-threaded processes (because of needing to take all locks by
+all libraries used by all threads and restoring state, etc...) is too
+complicated to make work in Android.
+
+Bug: 232904068
+Bug: 244525876
+Test: binderLibTest
+Change-Id: I38c354af2c69804a40dc2774086a9ab77d158ede
+(cherry picked from commit df732baf74ca36d50e60c31179e6364d8fd4aa06)
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ libs/binder/ProcessState.cpp | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/libs/binder/ProcessState.cpp b/libs/binder/ProcessState.cpp
+index 4a01d8176de..e1220c04aea 100644
+--- a/libs/binder/ProcessState.cpp
++++ b/libs/binder/ProcessState.cpp
+@@ -170,6 +170,10 @@ void ProcessState::childPostFork() {
+     // the thread handler is installed
+     if (gProcess) {
+         gProcess->mForked = true;
++
++        // "O_CLOFORK"
++        close(gProcess->mDriverFD);
++        gProcess->mDriverFD = -1;
+     }
+     gProcessMutex.unlock();
+ }
+
+From 7040be97c4ff272d001d4386de7544e6c2f3e520 Mon Sep 17 00:00:00 2001
+From: xinying1 <xinying1@xiaomi.corp-partner.google.com>
+Date: Tue, 26 Apr 2022 14:41:30 +0800
+Subject: [PATCH 08/21] Fix the shadow problem caused by layer parent switching
+
+When the parent of a layer changes, shadowRadius should
+not be directly passed in the computBounds here.
+
+When the layer's parent changes, for example, open an app
+in freeform. If the app exits the current ActivityRecord, it will
+trigger the recent task request screen capture of the
+current app, temporarily switch the task of the app to
+"Screenshot Parent", and then switch back. This operation
+will cause the shadow of the task to be passed to the children layers
+through CanDrawShadows, i.e., the shadow of non Container layer
+is wrongly passed to its children layers.
+Therefore, there is a problem in shadow drawing.
+
+We should judge whether shadowRadius needs to be passed
+at this time through CanDrawShadows. If not, pass 0.f.
+
+Otherwise, the shadow will be painted repeatedly.
+
+bug:215476160 in partnerissuetracker
+
+Signed-off-by: xinying1 <xinying1@xiaomi.corp-partner.google.com>
+Change-Id: Id4b6c8bcc79aa68f96d0c4c655ea853361ed1e7c
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ services/surfaceflinger/Layer.cpp | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/services/surfaceflinger/Layer.cpp b/services/surfaceflinger/Layer.cpp
+index aff94d132ee..c2b0a112d62 100644
+--- a/services/surfaceflinger/Layer.cpp
++++ b/services/surfaceflinger/Layer.cpp
+@@ -1587,8 +1587,10 @@ ssize_t Layer::removeChild(const sp<Layer>& layer) {
+ void Layer::setChildrenDrawingParent(const sp<Layer>& newParent) {
+     for (const sp<Layer>& child : mDrawingChildren) {
+         child->mDrawingParent = newParent;
++        const float parentShadowRadius =
++                newParent->canDrawShadows() ? 0.f : newParent->mEffectiveShadowRadius;
+         child->computeBounds(newParent->mBounds, newParent->mEffectiveTransform,
+-                             newParent->mEffectiveShadowRadius);
++                             parentShadowRadius);
+     }
+ }
+ 
+
+From 51ffa93362bc342ca14f255660b1aed29b8cbf38 Mon Sep 17 00:00:00 2001
+From: Juhyung Park <qkrwngud825@gmail.com>
+Date: Sun, 22 May 2022 04:20:41 +0900
+Subject: [PATCH 09/21] SF: Scheduler: add more window types to consider NoVote
+
+These types don't need high refresh rate.
+
+Change-Id: I5170cbb7ed5de8c97d8e25d08a567af4250aef86
+Signed-off-by: Juhyung Park <qkrwngud825@gmail.com>
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ services/surfaceflinger/Scheduler/Scheduler.cpp | 14 ++++++++++++--
+ 1 file changed, 12 insertions(+), 2 deletions(-)
+
+diff --git a/services/surfaceflinger/Scheduler/Scheduler.cpp b/services/surfaceflinger/Scheduler/Scheduler.cpp
+index 727cb0817ee..d3833cb9aa9 100644
+--- a/services/surfaceflinger/Scheduler/Scheduler.cpp
++++ b/services/surfaceflinger/Scheduler/Scheduler.cpp
+@@ -500,11 +500,21 @@ void Scheduler::registerLayer(Layer* layer) {
+     using WindowType = gui::WindowInfo::Type;
+ 
+     scheduler::LayerHistory::LayerVoteType voteType;
++    const auto windowType = layer->getWindowType();
+ 
+     if (!mFeatures.test(Feature::kContentDetection) ||
+-        layer->getWindowType() == WindowType::STATUS_BAR) {
++        windowType == WindowType::STATUS_BAR ||
++        windowType == WindowType::SYSTEM_ALERT ||
++        windowType == WindowType::TOAST ||
++        windowType == WindowType::SYSTEM_DIALOG ||
++        windowType == WindowType::KEYGUARD_DIALOG ||
++        windowType == WindowType::INPUT_METHOD ||
++        windowType == WindowType::INPUT_METHOD_DIALOG ||
++        windowType == WindowType::NAVIGATION_BAR ||
++        windowType == WindowType::VOLUME_OVERLAY ||
++        windowType == WindowType::NAVIGATION_BAR_PANEL) {
+         voteType = scheduler::LayerHistory::LayerVoteType::NoVote;
+-    } else if (layer->getWindowType() == WindowType::WALLPAPER) {
++    } else if (windowType == WindowType::WALLPAPER) {
+         // Running Wallpaper at Min is considered as part of content detection.
+         voteType = scheduler::LayerHistory::LayerVoteType::Min;
+     } else {
+
+From 7180411d7d9ec3f4209d94654d3a8188b475e521 Mon Sep 17 00:00:00 2001
+From: Juhyung Park <qkrwngud825@gmail.com>
+Date: Mon, 23 May 2022 08:13:38 +0900
+Subject: [PATCH 10/21] SF: Scheduler: vote max for NOTIFICATION_SHADE
+
+We want the maximum refresh rate for pulling down the notification panel.
+
+Change-Id: I688f6f07089f1db9d39f2c33e89239480c0c782a
+Signed-off-by: Juhyung Park <qkrwngud825@gmail.com>
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ services/surfaceflinger/Scheduler/Scheduler.cpp | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/services/surfaceflinger/Scheduler/Scheduler.cpp b/services/surfaceflinger/Scheduler/Scheduler.cpp
+index d3833cb9aa9..9a60833c488 100644
+--- a/services/surfaceflinger/Scheduler/Scheduler.cpp
++++ b/services/surfaceflinger/Scheduler/Scheduler.cpp
+@@ -514,6 +514,9 @@ void Scheduler::registerLayer(Layer* layer) {
+         windowType == WindowType::VOLUME_OVERLAY ||
+         windowType == WindowType::NAVIGATION_BAR_PANEL) {
+         voteType = scheduler::LayerHistory::LayerVoteType::NoVote;
++    } else if (windowType == WindowType::NOTIFICATION_SHADE) {
++        // Enforce max refresh rate for notification pulldown
++        voteType = scheduler::LayerHistory::LayerVoteType::Max;
+     } else if (windowType == WindowType::WALLPAPER) {
+         // Running Wallpaper at Min is considered as part of content detection.
+         voteType = scheduler::LayerHistory::LayerVoteType::Min;
+
+From 0e67330a42176ed66dc8851b6be5bc2b2066b290 Mon Sep 17 00:00:00 2001
+From: Juhyung Park <qkrwngud825@gmail.com>
+Date: Sun, 22 May 2022 05:07:51 +0900
+Subject: [PATCH 11/21] SF: set debug.sf.frame_rate_multiple_threshold to 60 by
+ default
+
+If the device only have 60 and 120 Hz in the config group, 60 Hz won't be
+used when watching a 24 fps video and instead 120 Hz will be used because
+it is perfectly divisible by 24.
+
+This is a publicly documented AOSP behavior [1], but it simply does not
+make any practical sense and trades off significant amount of power for a
+very-hard-to-notice jitter-free experience.
+
+Set debug.sf.frame_rate_multiple_threshold to 60 by default to limit this
+behavior to 60 or lower fps.
+
+[1] https://source.android.com/devices/graphics/multiple-refresh-rate
+
+Change-Id: I66353abc46ad16e63b2c9188794469ad71f2192e
+Signed-off-by: Juhyung Park <qkrwngud825@gmail.com>
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ services/surfaceflinger/SurfaceFlinger.cpp | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/services/surfaceflinger/SurfaceFlinger.cpp b/services/surfaceflinger/SurfaceFlinger.cpp
+index faaff26431d..c7d3e2b3e88 100644
+--- a/services/surfaceflinger/SurfaceFlinger.cpp
++++ b/services/surfaceflinger/SurfaceFlinger.cpp
+@@ -2854,7 +2854,7 @@ sp<DisplayDevice> SurfaceFlinger::setupNewDisplayDeviceInternal(
+         scheduler::RefreshRateConfigs::Config config =
+                 {.enableFrameRateOverride = android::sysprop::enable_frame_rate_override(false),
+                  .frameRateMultipleThreshold =
+-                         base::GetIntProperty("debug.sf.frame_rate_multiple_threshold", 0),
++                         base::GetIntProperty("debug.sf.frame_rate_multiple_threshold", 60),
+                  .idleTimerTimeout = idleTimerTimeoutMs,
+                  .kernelIdleTimerController = kernelIdleTimerController};
+         creationArgs.refreshRateConfigs =
+
+From b9312dbe6efd754a89d76f3ab02a27351c9cc919 Mon Sep 17 00:00:00 2001
+From: Vikas batchu <quic_vikabatc@quicinc.com>
+Date: Wed, 23 Mar 2022 22:25:29 +0530
+Subject: [PATCH 12/21] SF: Avoid present hidl call when DP is disconnected.
+
+CRs-Fixed: 3121678
+Change-Id: I2b778cc0fa1d9f93560fadfd715605ae062f5af1
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ .../surfaceflinger/DisplayHardware/HWComposer.cpp     | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
+
+diff --git a/services/surfaceflinger/DisplayHardware/HWComposer.cpp b/services/surfaceflinger/DisplayHardware/HWComposer.cpp
+index a6aee1f2f59..f9ca984d5f7 100644
+--- a/services/surfaceflinger/DisplayHardware/HWComposer.cpp
++++ b/services/surfaceflinger/DisplayHardware/HWComposer.cpp
+@@ -491,6 +491,13 @@ status_t HWComposer::getDeviceCompositionChanges(
+ 
+ sp<Fence> HWComposer::getPresentFence(HalDisplayId displayId) const {
+     RETURN_IF_INVALID_DISPLAY(displayId, Fence::NO_FENCE);
++
++    auto& hwcDisplay = mDisplayData.at(displayId).hwcDisplay;
++
++    if (!hwcDisplay->isConnected()) {
++        return Fence::NO_FENCE;
++    }
++
+     return mDisplayData.at(displayId).lastPresentFence;
+ }
+ 
+@@ -515,6 +522,10 @@ status_t HWComposer::presentAndGetReleaseFences(
+     auto& displayData = mDisplayData[displayId];
+     auto& hwcDisplay = displayData.hwcDisplay;
+ 
++    if (!hwcDisplay->isConnected()) {
++        return NO_ERROR;
++    }
++
+     if (displayData.validateWasSkipped) {
+         // explicitly flush all pending commands
+         auto error = static_cast<hal::Error>(mComposer->executeCommands());
+
+From 1a2451ea0be6b193cb9dd2567d4b3f666fff1993 Mon Sep 17 00:00:00 2001
+From: Adithya R <gh0strider.2k18.reborn@gmail.com>
+Date: Sun, 9 Oct 2022 20:28:56 +0530
+Subject: [PATCH 13/21] SF: Bring back support for disabling backpressure
+ propagation
+
+Taken from CLO (QSSI 13). Some Qualcomm devices can still
+benefit from disabling backpressure propagation by setting:
+
+debug.sf.disable_backpressure=1
+
+Change-Id: I2346a1b314666706e1299b295f13b2cef6e00b4d
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ services/surfaceflinger/SurfaceFlinger.cpp | 8 ++++++--
+ services/surfaceflinger/SurfaceFlinger.h   | 1 +
+ 2 files changed, 7 insertions(+), 2 deletions(-)
+
+diff --git a/services/surfaceflinger/SurfaceFlinger.cpp b/services/surfaceflinger/SurfaceFlinger.cpp
+index c7d3e2b3e88..cf532c76da0 100644
+--- a/services/surfaceflinger/SurfaceFlinger.cpp
++++ b/services/surfaceflinger/SurfaceFlinger.cpp
+@@ -398,6 +398,10 @@ SurfaceFlinger::SurfaceFlinger(Factory& factory) : SurfaceFlinger(factory, SkipI
+     int debugDdms = atoi(value);
+     ALOGI_IF(debugDdms, "DDMS debugging not supported");
+ 
++    property_get("debug.sf.disable_backpressure", value, "0");
++    mPropagateBackpressure = !atoi(value);
++    ALOGI_IF(!mPropagateBackpressure, "Disabling backpressure propagation");
++
+     property_get("debug.sf.enable_gl_backpressure", value, "0");
+     mPropagateBackpressureClientComposition = atoi(value);
+     ALOGI_IF(mPropagateBackpressureClientComposition,
+@@ -2026,7 +2030,7 @@ bool SurfaceFlinger::commit(nsecs_t frameTime, int64_t vsyncId, nsecs_t expected
+     // When Backpressure propagation is enabled we want to give a small grace period
+     // for the present fence to fire instead of just giving up on this frame to handle cases
+     // where present fence is just about to get signaled.
+-    const int graceTimeForPresentFenceMs =
++    const int graceTimeForPresentFenceMs = mPropagateBackpressure &&
+             (mPropagateBackpressureClientComposition || !mHadClientComposition) ? 1 : 0;
+ 
+     // Pending frames may trigger backpressure propagation.
+@@ -2084,7 +2088,7 @@ bool SurfaceFlinger::commit(nsecs_t frameTime, int64_t vsyncId, nsecs_t expected
+         }
+     }
+ 
+-    if (framePending) {
++    if (framePending && mPropagateBackpressure) {
+         if ((hwcFrameMissed && !gpuFrameMissed) || mPropagateBackpressureClientComposition) {
+             scheduleCommit(FrameHint::kNone);
+             return false;
+diff --git a/services/surfaceflinger/SurfaceFlinger.h b/services/surfaceflinger/SurfaceFlinger.h
+index 2cd8ff1b547..57b425f7394 100644
+--- a/services/surfaceflinger/SurfaceFlinger.h
++++ b/services/surfaceflinger/SurfaceFlinger.h
+@@ -1269,6 +1269,7 @@ class SurfaceFlinger : public BnSurfaceComposer,
+     std::atomic_bool mForceFullDamage = false;
+ 
+     bool mLayerCachingEnabled = false;
++    bool mPropagateBackpressure = true;
+     bool mPropagateBackpressureClientComposition = false;
+     sp<SurfaceInterceptor> mInterceptor;
+ 
+
+From 53c35206dc257d8907fa60a21d7ecbffc37aea85 Mon Sep 17 00:00:00 2001
+From: Pierre-Hugues Husson <phh@phh.me>
+Date: Thu, 22 Oct 2020 23:22:46 +0200
+Subject: [PATCH 14/21] Matching an input with a display uses uniqueId
+
+Not all devices have a `location`, notably bluetooth devices.
+However, we might still want to associate them with a screen,
+so match them with uniqueId indeed.
+
+This is useful to have bluetooth keyboard in desktop mode for instance.
+
+Change-Id: Ifcbc8329d54386f58e013270d9888316c0f516b6
+---
+ services/inputflinger/reader/InputDevice.cpp | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/services/inputflinger/reader/InputDevice.cpp b/services/inputflinger/reader/InputDevice.cpp
+index 989700f6cf1..e45222103bd 100644
+--- a/services/inputflinger/reader/InputDevice.cpp
++++ b/services/inputflinger/reader/InputDevice.cpp
+@@ -309,7 +309,10 @@ void InputDevice::configure(nsecs_t when, const InputReaderConfiguration* config
+             mAssociatedDisplayUniqueId = std::nullopt;
+             mAssociatedViewport = std::nullopt;
+             // Find the display port that corresponds to the current input port.
+-            const std::string& inputPort = mIdentifier.location;
++            std::string inputPort = mIdentifier.location;
++            if (inputPort.empty()) {
++                inputPort = mIdentifier.uniqueId;
++            }
+             if (!inputPort.empty()) {
+                 const std::unordered_map<std::string, uint8_t>& ports = config->portAssociations;
+                 const auto& displayPort = ports.find(inputPort);
+
+From 6c9e20a266359cf1c730065b30dcabd0b3b48fa7 Mon Sep 17 00:00:00 2001
+From: Pierre-Hugues Husson <phh@phh.me>
+Date: Tue, 5 Jan 2021 23:44:00 +0100
+Subject: [PATCH 15/21] unshared_oob didn't exist in O/P, so detect its
+ supported based on vndk version
+
+---
+ cmds/installd/migrate_legacy_obb_data.sh | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/cmds/installd/migrate_legacy_obb_data.sh b/cmds/installd/migrate_legacy_obb_data.sh
+index 7399681c3e6..9d5b73eae2f 100644
+--- a/cmds/installd/migrate_legacy_obb_data.sh
++++ b/cmds/installd/migrate_legacy_obb_data.sh
+@@ -18,7 +18,7 @@
+ rm -rf /data/media/0/Android/obb/test_probe
+ mkdir -p /data/media/0/Android/obb/
+ touch /data/media/0/Android/obb/test_probe
+-if ! test -f /data/media/0/Android/obb/test_probe ; then
++if ! test -f /data/media/0/Android/obb/test_probe  || [ "$(adb shell getprop ro.vndk.version)" -le 28 ]; then
+   log -p i -t migrate_legacy_obb_data "No support for 'unshared_obb'. Not migrating"
+   rm -rf /data/media/0/Android/obb/test_probe
+   exit 0
+
+From fe3acfdd42a31032209fe497587db0a9f40ef632 Mon Sep 17 00:00:00 2001
+From: Khalvat-M <mmba313@gmail.com>
+Date: Sun, 12 Mar 2023 08:13:25 +0330
+Subject: [PATCH 16/21] Revert "Disable gpu service"
+
+This reverts commit adb324b12db05e5c03e587195f40384556847d83.
+---
+ services/gpuservice/gpuservice.rc | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/services/gpuservice/gpuservice.rc b/services/gpuservice/gpuservice.rc
+index b5b271402db..0da8bd3812f 100644
+--- a/services/gpuservice/gpuservice.rc
++++ b/services/gpuservice/gpuservice.rc
+@@ -2,4 +2,3 @@ service gpu /system/bin/gpuservice
+     class core
+     user gpu_service
+     group graphics readtracefs
+-    disabled
+
+From 18bffb8320ab0418d4ce672247cce49cc4724a0b Mon Sep 17 00:00:00 2001
+From: Vishnu Nair <vishnun@google.com>
+Date: Wed, 25 Jan 2023 17:49:13 +0000
+Subject: [PATCH 17/21] DO NOT MERGE: SF: Fix a race between layer creation and
+ apply transaction
+
+Between commitCreatedLayers and applyTransactions in the main
+thread, the client could create a new layer and queue a transaction.
+This will mean a layer transaction can be applied before the layer
+can be committed.
+
+Fix this by flushing the transactions to be applied before
+committing any new layers.
+
+Test: presubmit
+Fixes: b/262336014
+Google: 2402155
+Change-Id: I9987614ade29456453de3610782a645ea9db0892
+---
+ services/surfaceflinger/SurfaceFlinger.cpp | 27 ++++++++++++++++++----
+ services/surfaceflinger/SurfaceFlinger.h   |  6 ++++-
+ 2 files changed, 28 insertions(+), 5 deletions(-)
+
+diff --git a/services/surfaceflinger/SurfaceFlinger.cpp b/services/surfaceflinger/SurfaceFlinger.cpp
+index cf532c76da0..8d1c88f8baa 100644
+--- a/services/surfaceflinger/SurfaceFlinger.cpp
++++ b/services/surfaceflinger/SurfaceFlinger.cpp
+@@ -2140,8 +2140,16 @@ bool SurfaceFlinger::commit(nsecs_t frameTime, int64_t vsyncId, nsecs_t expected
+ 
+         bool needsTraversal = false;
+         if (clearTransactionFlags(eTransactionFlushNeeded)) {
++            // Locking:
++            // 1. to prevent onHandleDestroyed from being called while the state lock is held,
++            // we must keep a copy of the transactions (specifically the composer
++            // states) around outside the scope of the lock
++            // 2. Transactions and created layers do not share a lock. To prevent applying
++            // transactions with layers still in the createdLayer queue, flush the transactions
++            // before committing the created layers.
++            std::vector<TransactionState> transactions = flushTransactions();
+             needsTraversal |= commitCreatedLayers();
+-            needsTraversal |= flushTransactionQueues(vsyncId);
++            needsTraversal |= applyTransactions(transactions, vsyncId);
+         }
+ 
+         const bool shouldCommit =
+@@ -3829,7 +3837,7 @@ int SurfaceFlinger::flushPendingTransactionQueues(
+     return transactionsPendingBarrier;
+ }
+ 
+-bool SurfaceFlinger::flushTransactionQueues(int64_t vsyncId) {
++std::vector<TransactionState> SurfaceFlinger::flushTransactions() {
+     // to prevent onHandleDestroyed from being called while the lock is held,
+     // we must keep a copy of the transactions (specifically the composer
+     // states) around outside the scope of the lock
+@@ -3923,14 +3931,25 @@ bool SurfaceFlinger::flushTransactionQueues(int64_t vsyncId) {
+                 flushUnsignaledPendingTransactionQueues(transactions, bufferLayersReadyToPresent,
+                                                         applyTokensWithUnsignaledTransactions);
+             }
+-
+-            return applyTransactions(transactions, vsyncId);
+         }
+     }
++    return transactions;
++}
++
++// for test only
++bool SurfaceFlinger::flushTransactionQueues(int64_t vsyncId) {
++    std::vector<TransactionState> transactions = flushTransactions();
++    return applyTransactions(transactions, vsyncId);
+ }
+ 
+ bool SurfaceFlinger::applyTransactions(std::vector<TransactionState>& transactions,
+                                        int64_t vsyncId) {
++    Mutex::Autolock _l(mStateLock);
++    return applyTransactionsLocked(transactions, vsyncId);
++}
++
++bool SurfaceFlinger::applyTransactionsLocked(std::vector<TransactionState>& transactions,
++                                             int64_t vsyncId) {
+     bool needsTraversal = false;
+     // Now apply all transactions.
+     for (auto& transaction : transactions) {
+diff --git a/services/surfaceflinger/SurfaceFlinger.h b/services/surfaceflinger/SurfaceFlinger.h
+index 57b425f7394..f255fd3b203 100644
+--- a/services/surfaceflinger/SurfaceFlinger.h
++++ b/services/surfaceflinger/SurfaceFlinger.h
+@@ -773,6 +773,9 @@ class SurfaceFlinger : public BnSurfaceComposer,
+             REQUIRES(mStateLock);
+     // flush pending transaction that was presented after desiredPresentTime.
+     bool flushTransactionQueues(int64_t vsyncId);
++
++    std::vector<TransactionState> flushTransactions();
++
+     // Returns true if there is at least one transaction that needs to be flushed
+     bool transactionFlushNeeded();
+ 
+@@ -821,7 +824,8 @@ class SurfaceFlinger : public BnSurfaceComposer,
+                                size_t totalTXapplied) const;
+     bool stopTransactionProcessing(const std::unordered_set<sp<IBinder>, SpHash<IBinder>>&
+                                            applyTokensWithUnsignaledTransactions) const;
+-    bool applyTransactions(std::vector<TransactionState>& transactions, int64_t vsyncId)
++    bool applyTransactions(std::vector<TransactionState>& transactions, int64_t vsyncId);
++    bool applyTransactionsLocked(std::vector<TransactionState>& transactions, int64_t vsyncId)
+             REQUIRES(mStateLock);
+     uint32_t setDisplayStateLocked(const DisplayState& s) REQUIRES(mStateLock);
+     uint32_t addInputWindowCommands(const InputWindowCommands& inputWindowCommands)
+
+From a29a7b840e3a9d9cc155122e2d4272cba7d37725 Mon Sep 17 00:00:00 2001
+From: Ray Zhang <quic_rayz@quicinc.com>
+Date: Fri, 18 Mar 2022 15:39:24 +0800
+Subject: [PATCH 18/21] nativedisplay: fix the flicker issue in streaming video
+
+In streaming video case, video decoder needs to change buffer
+color space dynamically according to video stream real-time
+parameters.
+
+CRs-Fixed: 3155775
+Change-Id: I21590ee41708f5cb1ed45cb5a7f5c00f1c129bb0
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ .../include/surfacetexture/EGLConsumer.h      |  3 ++-
+ .../surfacetexture/EGLConsumer.cpp            | 19 +++++++++++++++++--
+ libs/ui/include/ui/GraphicBuffer.h            |  5 +++++
+ 3 files changed, 24 insertions(+), 3 deletions(-)
+
+diff --git a/libs/nativedisplay/include/surfacetexture/EGLConsumer.h b/libs/nativedisplay/include/surfacetexture/EGLConsumer.h
+index 444722bf83c..5fe8ce60efa 100644
+--- a/libs/nativedisplay/include/surfacetexture/EGLConsumer.h
++++ b/libs/nativedisplay/include/surfacetexture/EGLConsumer.h
+@@ -21,6 +21,7 @@
+ #include <gui/BufferQueueDefs.h>
+ #include <ui/FenceTime.h>
+ #include <ui/GraphicBuffer.h>
++#include <ui/GraphicTypes.h>
+ #include <utils/Mutex.h>
+ 
+ namespace android {
+@@ -198,7 +199,7 @@ class EGLConsumer {
+ 
+         // mGraphicBuffer is the buffer that was used to create this image.
+         sp<GraphicBuffer> mGraphicBuffer;
+-
++        ui::Dataspace mDataSpace;
+         // mEglImage is the EGLImage created from mGraphicBuffer.
+         EGLImageKHR mEglImage;
+ 
+diff --git a/libs/nativedisplay/surfacetexture/EGLConsumer.cpp b/libs/nativedisplay/surfacetexture/EGLConsumer.cpp
+index 0128859ca68..74c422d1f7d 100644
+--- a/libs/nativedisplay/surfacetexture/EGLConsumer.cpp
++++ b/libs/nativedisplay/surfacetexture/EGLConsumer.cpp
+@@ -605,7 +605,9 @@ void EGLConsumer::onAbandonLocked() {
+ }
+ 
+ EGLConsumer::EglImage::EglImage(sp<GraphicBuffer> graphicBuffer)
+-      : mGraphicBuffer(graphicBuffer), mEglImage(EGL_NO_IMAGE_KHR), mEglDisplay(EGL_NO_DISPLAY) {}
++      : mGraphicBuffer(graphicBuffer), mEglImage(EGL_NO_IMAGE_KHR), mEglDisplay(EGL_NO_DISPLAY) {
++      mDataSpace = ui::Dataspace::UNKNOWN;  
++}
+ 
+ EGLConsumer::EglImage::~EglImage() {
+     if (mEglImage != EGL_NO_IMAGE_KHR) {
+@@ -620,7 +622,16 @@ status_t EGLConsumer::EglImage::createIfNeeded(EGLDisplay eglDisplay, bool force
+     // If there's an image and it's no longer valid, destroy it.
+     bool haveImage = mEglImage != EGL_NO_IMAGE_KHR;
+     bool displayInvalid = mEglDisplay != eglDisplay;
+-    if (haveImage && (displayInvalid || forceCreation)) {
++
++    ui::Dataspace dataspace;
++    bool dataspaceChanged = false;
++    if (mGraphicBuffer->getDataspace(&dataspace) == 0 ) {
++         dataspaceChanged = (mDataSpace != dataspace)? true:false;
++         if(dataspaceChanged)
++             ALOGI("createIfNeeded: Recreate new EGLImage since dataspace changed");
++    }
++
++    if (haveImage && (displayInvalid || forceCreation || dataspaceChanged)) {
+         if (!eglDestroyImageKHR(mEglDisplay, mEglImage)) {
+             ALOGE("createIfNeeded: eglDestroyImageKHR failed");
+         }
+@@ -644,6 +655,10 @@ status_t EGLConsumer::EglImage::createIfNeeded(EGLDisplay eglDisplay, bool force
+               buffer->getPixelFormat());
+         return UNKNOWN_ERROR;
+     }
++    
++    if (dataspaceChanged) {
++        mDataSpace = dataspace;
++    }
+ 
+     return OK;
+ }
+diff --git a/libs/ui/include/ui/GraphicBuffer.h b/libs/ui/include/ui/GraphicBuffer.h
+index 57be686592d..542da2cdd09 100644
+--- a/libs/ui/include/ui/GraphicBuffer.h
++++ b/libs/ui/include/ui/GraphicBuffer.h
+@@ -29,6 +29,7 @@
+ #include <ui/GraphicBufferMapper.h>
+ #include <ui/PixelFormat.h>
+ #include <ui/Rect.h>
++#include <ui/GraphicTypes.h>
+ #include <utils/Flattenable.h>
+ #include <utils/RefBase.h>
+ 
+@@ -155,6 +156,10 @@ class GraphicBuffer
+     Rect getBounds() const              { return Rect(width, height); }
+     uint64_t getId() const              { return mId; }
+ 
++    status_t getDataspace(ui::Dataspace* outDataspace){
++        return mBufferMapper.getDataspace(handle, outDataspace);
++    }
++
+     uint32_t getGenerationNumber() const { return mGenerationNumber; }
+     void setGenerationNumber(uint32_t generation) {
+         mGenerationNumber = generation;
+
+From 759e8a1412780c9ec95578b34c06e7e000110f5a Mon Sep 17 00:00:00 2001
+From: tangcheng <tangcheng@xiaomi.com>
+Date: Thu, 7 Apr 2022 14:26:05 +0800
+Subject: [PATCH 19/21] Fix libgui cts crash bug
+
+While enabling #define LOG_NDEBUG 0, run camera cts test command:
+run cts -m CtsCameraTestCases -t android.hardware.camera2.cts.MultiViewTest#testSharedSurfaceImageReaderSwitch
+the libgui will crash due to nullptr, fix this by add nullptr
+judgement when pointing to the Graphicbuffer handle
+Bug: 228349805
+
+Signed-off-by: tangcheng <tangcheng@xiaomi.com>
+Change-Id: I69a84bdb5208b16df88f5f09f45c1a93ad2afe01
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ libs/gui/BufferQueueProducer.cpp | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/libs/gui/BufferQueueProducer.cpp b/libs/gui/BufferQueueProducer.cpp
+index 5fe5e71db90..2d56dd37c21 100644
+--- a/libs/gui/BufferQueueProducer.cpp
++++ b/libs/gui/BufferQueueProducer.cpp
+@@ -606,7 +606,8 @@ status_t BufferQueueProducer::dequeueBuffer(int* outSlot, sp<android::Fence>* ou
+     BQ_LOGV("dequeueBuffer: returning slot=%d/%" PRIu64 " buf=%p flags=%#x",
+             *outSlot,
+             mSlots[*outSlot].mFrameNumber,
+-            mSlots[*outSlot].mGraphicBuffer->handle, returnFlags);
++            mSlots[*outSlot].mGraphicBuffer != nullptr ?
++            mSlots[*outSlot].mGraphicBuffer->handle : nullptr, returnFlags);
+ 
+     if (outBufferAge) {
+         *outBufferAge = mCore->mBufferAge;
+
+From f8bece6b1bd42e32c234629c7639f2c34ee033af Mon Sep 17 00:00:00 2001
+From: Jessie Hao <juan.hao@nxp.com>
+Date: Fri, 2 Sep 2022 12:36:56 +0800
+Subject: [PATCH 20/21] Fix validateBufferDescriptorInfo error when usage bits
+ were 32-bits
+
+When usage bits were 32-bits, and the bit 31 is 1, will meet the below error:
+E Gralloc4: buffer descriptor contains invalid usage bits 0xffff00000000
+E GraphicBufferMapper: validateBufferSize(0xb400007adcd71320) failed: 1
+
+android_native_buffer_t define usage_deprecated as int.
+For example usage_deprecated is 0x80000000,
+uint64_t(0x80000000) will cast to 0xffffffff80000000, which leads to
+validateBufferDescriptorInfo fail.
+
+Add ANDROID_NATIVE_UNSIGNED_CAST(usage_deprecated) to fix this.
+
+Test:
+CtsMediaRecorderTestCases
+android.media.recorder.cts.MediaRecorderTest#testProfileAvcBaselineLevel1
+
+Bug: b/244620240
+Signed-off-by: Jessie Hao <juan.hao@nxp.com>
+Change-Id: I131b9dee3b2b768729218d8f7cabe0026ab89007
+(cherry picked from commit 5480b2129e55a9b00f789e9b1caa42656646634e)
+Signed-off-by: str-br <alexfinhart@gmail.com>
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ libs/ui/GraphicBuffer.cpp | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/libs/ui/GraphicBuffer.cpp b/libs/ui/GraphicBuffer.cpp
+index 3732fee7f24..429760ffe0e 100644
+--- a/libs/ui/GraphicBuffer.cpp
++++ b/libs/ui/GraphicBuffer.cpp
+@@ -465,7 +465,7 @@ status_t GraphicBuffer::unflatten(void const*& buffer, size_t& size, int const*&
+         if (flattenWordCount == 13) {
+             usage = (uint64_t(buf[12]) << 32) | uint32_t(buf[6]);
+         } else {
+-            usage = uint64_t(usage_deprecated);
++            usage = uint64_t(ANDROID_NATIVE_UNSIGNED_CAST(usage_deprecated));
+         }
+         native_handle* h =
+                 native_handle_create(static_cast<int>(numFds), static_cast<int>(numInts));
+
+From 5ac029bc4993e354eeb7e0fa65679cde29e3377d Mon Sep 17 00:00:00 2001
+From: DarkJoker360 <simoespo159@gmail.com>
+Date: Fri, 31 Mar 2023 08:58:14 +0200
+Subject: [PATCH 21/21] Revert "REThreaded: convert gen- and delete-Textures to
+ no-ops"
+
+This reverts commit 48b5f3cbeae031324406ccbcb037651c66611adb.
+
+Reason for revert: This is causing laggy bootanimation for some devices
+
+Test: boot, see no more bootanimation lags
+Change-Id: I05fc60a6ffa874e393f19a1fedb51bb054b2da0c
+---
+ libs/renderengine/threaded/RenderEngineThreaded.cpp | 8 --------
+ 1 file changed, 8 deletions(-)
+
+diff --git a/libs/renderengine/threaded/RenderEngineThreaded.cpp b/libs/renderengine/threaded/RenderEngineThreaded.cpp
+index 203bb547015..889542b2d29 100644
+--- a/libs/renderengine/threaded/RenderEngineThreaded.cpp
++++ b/libs/renderengine/threaded/RenderEngineThreaded.cpp
+@@ -178,10 +178,6 @@ void RenderEngineThreaded::dump(std::string& result) {
+ 
+ void RenderEngineThreaded::genTextures(size_t count, uint32_t* names) {
+     ATRACE_CALL();
+-    // This is a no-op in SkiaRenderEngine.
+-    if (getRenderEngineType() != RenderEngineType::THREADED) {
+-        return;
+-    }
+     std::promise<void> resultPromise;
+     std::future<void> resultFuture = resultPromise.get_future();
+     {
+@@ -198,10 +194,6 @@ void RenderEngineThreaded::genTextures(size_t count, uint32_t* names) {
+ 
+ void RenderEngineThreaded::deleteTextures(size_t count, uint32_t const* names) {
+     ATRACE_CALL();
+-    // This is a no-op in SkiaRenderEngine.
+-    if (getRenderEngineType() != RenderEngineType::THREADED) {
+-        return;
+-    }
+     std::promise<void> resultPromise;
+     std::future<void> resultFuture = resultPromise.get_future();
+     {

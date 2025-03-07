@@ -21,7 +21,7 @@ croot
 repo sync --force-sync android
 
 cd .repo/manifests
-patch -p1 < ~/Downloads/20-ul/20-manifests-mar-2025.diff
+patch -p1 < ~/Downloads/20-ul/20-manifests-mar-2025-ver2.diff
 croot
 
 # espeak optional
@@ -46,6 +46,10 @@ croot
 
 cd frameworks/av
 git am ~/Downloads/frameworks_av-aug-2024.patch 
+croot
+
+cd frameworks/native
+git am ~/Downloads/frameworks_native_lineage-20.0-mar-2025.patch
 croot
 
 cd packages/modules/Wifi
