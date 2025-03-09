@@ -1,0 +1,72 @@
+# update git binary
+. build/envsetup.sh 
+cd .repo/repo/
+git pull
+croot
+
+# last 18.1 build was Sept 2024, let's resume since then
+repopick -t R_asb_2024-10
+
+# LineageOS is making a fork so we need to pick that first, then update our local manifest and resync the repo
+repopick -f 408436
+cd .repo/manifests
+git stash --include-untracked
+patch -p1 < ~/Downloads/181-manifests/181-nov-2024-mani.diff
+croot
+
+# Nov 2024
+repopick -t R_asb_2024-11
+repo sync --force-sync external/skia
+
+# Dec 2024
+repopick -t R_asb_2024-12
+
+# LineageOS is making a fork so we need to pick that first, then update our local manifest and resync the repo
+repopick -f 415707
+cd .repo/manifests
+git stash --include-untracked
+patch -p1 < ~/Downloads/181-manifests/181-jan-2025-mani.diff
+croot
+
+# Jan 2025
+repopick -t R_asb_2025-01
+repo sync --force-sync external/giflib prebuilts/abi-dumps/vndk
+
+# Feb 2025
+repopick -t R_asb_2025-02
+
+# LineageOS is making a fork so we need to pick that first, then update our local manifest and resync the repo
+repopick -f 421145
+cd .repo/manifests
+git stash --include-untracked
+patch -p1 < ~/Downloads/181-manifests/181-mar-2025-mani.diff
+croot
+
+# Mar 2025
+repopick -t R_asb_2025-03
+repo sync --force-sync external/dng_sdk
+
+# patch via https://review.lineageos.org/c/LineageOS/android_frameworks_base/+/411385
+# 411385 was put into LineageOS 19.1 and higher for microg spoofing, so let's backport it to 18.1
+cd frameworks/base
+patch -p1 < ~/Downloads/gerrit411385.diff
+croot
+
+# bump security string to March 2025
+cd build/core
+git stash --include-untracked
+croot
+cd build
+patch -p1 < ~/Downloads/181-bump-security-string.diff
+croot
+
+# Check to see if this patch is already done or not
+# If git diff does not show this patch, then patch it
+cd packages/modules/NetworkStack
+patch -p1 < ~/Downloads/'TcpSocketTracker: Opt-out for TCP info parsing on legacy.patch'
+croot
+
+# rerun to pickup any env changes
+. build/envsetup.sh 
+
+# breakfast and brunch as usual
