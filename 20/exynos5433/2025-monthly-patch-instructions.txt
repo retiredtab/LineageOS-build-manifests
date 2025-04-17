@@ -21,39 +21,39 @@ croot
 repo sync --force-sync android
 
 cd .repo/manifests
-patch -p1 < ~/Downloads/20-ul/20-manifests-mar-2025-ver2.diff
+patch -p1 < ~/Downloads/20-ul/20-manifests-april-2025.diff
 croot
 
 # espeak optional
 repo sync --force-sync ; espeak "sync done" ;
 
-# As of this writing, the March 5, 2025 patches were not yet merged via gerrit, so we pick them manually.
-repopick -t T_asb_2025-03
+# As of this writing, the April 5, 2025 patches were not yet merged via gerrit, so we pick them manually.
+repopick -t T_asb_2025-04
 
 # Now re-apply all our LineageOS-UL patches
 
 cd packages/modules/Bluetooth
-git am ~/Downloads/packages_modules_Bluetooth-july-2024.patch
+git am ~/Downloads/20-ul/packages_modules_Bluetooth-july-2024.patch
 croot
 
 cd frameworks/base
-git am ~/Downloads/frameworks-base-june-2024.patch
+git am ~/Downloads/20-ul/frameworks-base-june-2024.patch
 croot
 
 cd hardware/interfaces
-git am ~/Downloads/hardware_interfaces_aug-2024.patch
+git am ~/Downloads/20-ul/hardware_interfaces_aug-2024.patch
 croot
 
 cd frameworks/av
-git am ~/Downloads/frameworks_av-aug-2024.patch 
+git am ~/Downloads/20-ul/frameworks_av-aug-2024.patch
 croot
 
 cd frameworks/native
-git am ~/Downloads/frameworks_native_lineage-20.0-mar-2025.patch
+git am ~/Downloads/20-ul/frameworks_native_lineage-20.0-mar-2025.patch
 croot
 
 cd packages/modules/Wifi
-git am ~/Downloads/packages_module_Wifi-nov-2024.patch
+git am ~/Downloads/20-ul/packages_module_Wifi-nov-2024.patch
 croot
 
 # Now apply all device specific patches
