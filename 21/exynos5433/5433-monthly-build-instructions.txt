@@ -64,8 +64,8 @@ croot
 # espeak optional
 repo sync --force-sync ; espeak "sync done" ;
 
-# As of this writing, the March 1, 2025 patches were not yet merged via gerrit, so we pick them manually.
-repopick -t U_asb_2025-04
+# As of this writing, the May 1, 2025 patches were not yet merged via gerrit, so we pick them manually.
+repopick -t U_asb_2025-05
 
 [/code]
 
