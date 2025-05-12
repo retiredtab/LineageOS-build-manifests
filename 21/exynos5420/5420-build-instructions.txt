@@ -86,8 +86,8 @@ croot
 
 repo sync --force-sync ; espeak done ;
 
-# As of this writing, the April 1, 2025 patches were not yet merged via gerrit, so we pick them manually.
-repopick -t U_asb_2025-04
+# As of this writing, the May 1, 2025 patches were not yet merged via gerrit, so we pick them manually.
+repopick -t U_asb_2025-05
 
 6. Download the patches from
 
@@ -158,7 +158,7 @@ patch -p1 < ~/Downloads/5420-patches/5420-frameworks-av-omx-codecs.diff
 croot
 
 cd hardware/samsung
-patch -p1 < ~/Downloads/5420-patches/5420-hardware-samsung-include-ril.diff
+patch -p1 < ~/Downloads/5420-patches/5420-hardware-samsung-include-ril-may-2025.diff.diff
 croot
 
 cd hardware/samsung_slsi/exynos
