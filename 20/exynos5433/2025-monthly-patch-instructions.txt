@@ -21,14 +21,19 @@ croot
 repo sync --force-sync android
 
 cd .repo/manifests
-patch -p1 < ~/Downloads/20-ul/20-manifests-april-2025.diff
+patch -p1 < ~/Downloads/20-ul/20-manifests-may-2025.diff
 croot
 
 # espeak optional
 repo sync --force-sync ; espeak "sync done" ;
 
-# As of this writing, the April 5, 2025 patches were not yet merged via gerrit, so we pick them manually.
-repopick -t T_asb_2025-04
+# As of this writing, the May 5, 2025 patches were not yet merged via gerrit, so we pick them manually.
+repopick -t T_asb_2025-05
+
+# In addition, the bump string isn't incremented yet, so let's do that
+cd build
+patch -p1 < ~/Downloads/20-ul/bump-string-may-2025.diff
+croot
 
 # Now re-apply all our LineageOS-UL patches
 
