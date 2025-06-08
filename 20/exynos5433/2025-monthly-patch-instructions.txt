@@ -21,19 +21,14 @@ croot
 repo sync --force-sync android
 
 cd .repo/manifests
-patch -p1 < ~/Downloads/20-ul/20-manifests-may-2025.diff
+patch -p1 < ~/Downloads/20-ul/20-manifests-june-2025.diff
 croot
 
 # espeak optional
 repo sync --force-sync ; espeak "sync done" ;
 
-# As of this writing, the May 5, 2025 patches were not yet merged via gerrit, so we pick them manually.
-repopick -t T_asb_2025-05
-
-# In addition, the bump string isn't incremented yet, so let's do that
-cd build
-patch -p1 < ~/Downloads/20-ul/bump-string-may-2025.diff
-croot
+# As of this writing, the June 5, 2025 patches were not yet merged via gerrit, so we pick them manually.
+repopick -t T_asb_2025-06
 
 # Now re-apply all our LineageOS-UL patches
 
@@ -59,6 +54,10 @@ croot
 
 cd packages/modules/Wifi
 git am ~/Downloads/20-ul/packages_module_Wifi-nov-2024.patch
+croot
+
+cd packages/modules/Connectivity
+git am ~/Downloads/20-ul/packages_modules_Connectivity_lineage-20.0-june-2025.patch
 croot
 
 # Now apply all device specific patches
