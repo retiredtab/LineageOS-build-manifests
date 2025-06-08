@@ -43,6 +43,9 @@ croot
 cd vendor/lineage
 git stash --include-untracked
 croot
+cd build/release
+git stash --include-untracked
+croot
 
 [/code]
 
@@ -58,14 +61,19 @@ croot
 repo sync --force-sync android
 cd .repo/manifests
 # put our changes to manifests
-patch -p1 < ~/Downloads/21-ul/apr-mani-2025.diff
+patch -p1 < ~/Downloads/21-ul/jun-mani-2025.diff
 croot
 
 # espeak optional
 repo sync --force-sync ; espeak "sync done" ;
 
-# As of this writing, the May 1, 2025 patches were not yet merged via gerrit, so we pick them manually.
-repopick -t U_asb_2025-05
+# As of this writing, the June 1, 2025 patches were not yet merged via gerrit, so we pick them manually.
+repopick -t U_asb_2025-06
+
+# change security string manually as it's not yet on gerrit
+cd build/release
+patch -p1 < ~/Downloads/21-ul/build-release-june-2025.diff
+croot
 
 [/code]
 
@@ -109,6 +117,14 @@ croot
 cd vendor/lineage
 patch -p1 < ~/Downloads/21-ul/vendor_lineage-nov-2024.diff
 patch -p1 < ~/Downloads/21-ul/vendor_lineage_skip_abi_checks.patch
+croot
+
+cd art
+patch -p1 < ~/Downloads/21-ul/art_june-2025.patch
+croot
+
+cd packages/modules/Connectivity
+patch -p1 < ~/Downloads/21-ul/packages_modules_Connectivity_lineage-21.0-june-2025.patch
 croot
 
 # needed for fix compiler error
