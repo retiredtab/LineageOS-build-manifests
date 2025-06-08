@@ -141,6 +141,14 @@ cd build/make
 git am ~/Downloads/21-ul/build-aug-2024.patch
 croot
 
+cd art
+patch -p1 < ~/Downloads/21-ul/art_june-2025.patch
+croot
+
+cd packages/modules/Connectivity
+patch -p1 < ~/Downloads/21-ul/packages_modules_Connectivity_lineage-21.0-june-2025.patch
+croot
+
 # needed for fix compiler error
 
 cd hardware/lineage/interfaces/
