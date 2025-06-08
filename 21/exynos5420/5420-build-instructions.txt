@@ -184,6 +184,10 @@ cd hardware/samsung_slsi/exynos5420
 patch -p1 < ~/Downloads/5420-patches/hardware_samsung_slsi_exynos5420.diff
 croot
 
+cd device/samsung/universal5420-common
+patch -p1 ~/Downloads/5420-patches/remove-inprocess-june-2025.diff
+croot
+
 # repopick to fix compiler errors for 5420
 repopick -f 331660 331661
 
