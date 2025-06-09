@@ -169,7 +169,7 @@ patch -p1 < ~/Downloads/5420-patches/5420-frameworks-av-omx-codecs.diff
 croot
 
 cd hardware/samsung
-patch -p1 < ~/Downloads/5420-patches/5420-hardware-samsung-include-ril-may-2025.diff.diff
+patch -p1 < ~/Downloads/5420-patches/5420-hardware-samsung-include-ril-may-2025.diff
 croot
 
 cd hardware/samsung_slsi/exynos
