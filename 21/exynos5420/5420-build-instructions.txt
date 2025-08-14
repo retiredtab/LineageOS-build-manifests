@@ -73,6 +73,12 @@ croot
 cd build/release
 git stash --include-untracked
 croot
+cd art
+git stash --include-untracked
+croot
+cd packages/modules/Connectivity
+git stash --include-untracked
+croot
 
 cd .repo/manifests
 # stash any changes from last time and use the new mainfest patch file
@@ -89,8 +95,13 @@ croot
 
 repo sync --force-sync ; espeak done ;
 
-# As of this writing, the June 1, 2025 patches were not yet merged via gerrit, so we pick them manually.
-repopick -t U_asb_2025-06
+# As of this writing, the Aug 1, 2025 patches were not yet merged via gerrit, so we pick them manually.
+repopick -t U_asb_2025-08
+
+# August bump security string not yet on gerrit, so let's do it ourselves
+cd build/release
+patch -p1 < ~/Downloads/21-ul/aug-bump.diff
+croot
 
 6. Download the patches from
 
