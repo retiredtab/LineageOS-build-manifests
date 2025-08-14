@@ -12,6 +12,10 @@ croot
 
 # Stash our changes from last month
 
+cd build/core
+git stash --include-untracked
+croot
+
 # Install local monthly manifest changes
 cd .repo/manifests
 git stash --include-untracked
@@ -27,8 +31,13 @@ croot
 # espeak optional
 repo sync --force-sync ; espeak "sync done" ;
 
-# As of this writing, the June 5, 2025 patches were not yet merged via gerrit, so we pick them manually.
-repopick -t T_asb_2025-06
+# As of this writing, the Aug 5, 2025 patches were not yet merged via gerrit, so we pick them manually.
+repopick -t T_asb_2025-08
+
+# August bump string commit is also not present yet, so let's bump it
+cd build
+patch -p1 < ~/Downloads/20-ul/bump-aug05.diff
+croot
 
 # Now re-apply all our LineageOS-UL patches
 
