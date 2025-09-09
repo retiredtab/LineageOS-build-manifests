@@ -31,13 +31,8 @@ croot
 # espeak optional
 repo sync --force-sync ; espeak "sync done" ;
 
-# As of this writing, the Aug 5, 2025 patches were not yet merged via gerrit, so we pick them manually.
-repopick -t T_asb_2025-08
-
-# August bump string commit is also not present yet, so let's bump it
-cd build
-patch -p1 < ~/Downloads/20-ul/bump-aug05.diff
-croot
+# As of this writing, the Sept 5, 2025 patches were not yet merged via gerrit, so we pick them manually.
+repopick -t T_asb_2025-09
 
 # Now re-apply all our LineageOS-UL patches
 
