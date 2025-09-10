@@ -25,7 +25,7 @@ croot
 repo sync --force-sync android
 
 cd .repo/manifests
-patch -p1 < ~/Downloads/20-ul/20-manifests-june-2025.diff
+patch -p1 < ~/Downloads/20-ul/20-manifests-sept-2025.diff
 croot
 
 # espeak optional
@@ -62,6 +62,10 @@ croot
 
 cd packages/modules/Connectivity
 git am ~/Downloads/20-ul/packages_modules_Connectivity_lineage-20.0-june-2025.patch
+croot
+
+cd frameworks/opt/telephony
+git am ~/Downloads/20-ul/frameworks_opt_telephony_lineage-sept-2025.patch
 croot
 
 # Now apply all device specific patches
