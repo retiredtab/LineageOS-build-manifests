@@ -70,18 +70,18 @@ croot
 repo sync --force-sync android
 cd .repo/manifests
 # put our changes to manifests
-patch -p1 < ~/Downloads/21-ul/jun-mani-2025.diff
+patch -p1 < ~/Downloads/21-ul/sept-mani-2025.diff
 croot
 
 # espeak optional
 repo sync --force-sync ; espeak "sync done" ;
 
-# As of this writing, the Aug 1, 2025 patches were not yet merged via gerrit, so we pick them manually.
-repopick -t U_asb_2025-08
+# As of this writing, the Sept 1, 2025 patches were not yet merged via gerrit, so we pick them manually.
+repopick -t U_asb_2025-09
 
-# August bump security string not yet on gerrit, so let's do it ourselves
+# Sept bump security string not yet on gerrit, so let's do it ourselves
 cd build/release
-patch -p1 < ~/Downloads/21-ul/aug-bump.diff
+patch -p1 < ~/Downloads/21-ul/sept-bump.diff
 croot
 
 [/code]
@@ -134,6 +134,10 @@ croot
 
 cd packages/modules/Connectivity
 patch -p1 < ~/Downloads/21-ul/packages_modules_Connectivity_lineage-21.0-june-2025.patch
+croot
+
+cd frameworks/opt/telephony
+git am ~/Downloads/21-ul/frameworks_opt_telephony-sept-2025.patch
 croot
 
 # needed for fix compiler error
