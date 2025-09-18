@@ -30,8 +30,8 @@ patch -p1 < ~/Downloads/181-manifests/181-jan-2025-mani.diff
 croot
 
 # Jan 2025
-repopick -t R_asb_2025-01
 repo sync --force-sync external/giflib prebuilts/abi-dumps/vndk
+repopick -t R_asb_2025-01
 
 # Feb 2025
 repopick -t R_asb_2025-02
