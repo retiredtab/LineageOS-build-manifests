@@ -17,6 +17,7 @@ croot
 # Nov 2024
 repopick -t R_asb_2024-11
 repo sync --force-sync external/skia
+repopick -f 408442
 
 # Dec 2024
 repopick -t R_asb_2024-12
