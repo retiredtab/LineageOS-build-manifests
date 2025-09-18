@@ -47,12 +47,6 @@ croot
 repo sync --force-sync external/dng_sdk
 repopick -t R_asb_2025-03
 
-# patch via https://review.lineageos.org/c/LineageOS/android_frameworks_base/+/411385
-# 411385 was put into LineageOS 19.1 and higher for microg spoofing, so let's backport it to 18.1
-cd frameworks/base
-patch -p1 < ~/Downloads/gerrit411385.diff
-croot
-
 # bump security string to March 2025
 cd build/core
 git stash --include-untracked
