@@ -12,3 +12,7 @@ Sep - 22.2
 Oct - 21.0
 Nov - 20.0
 Dec - 22.2
+
+I'm switching to this build schedule due to Google's change in security patches as per ("Android’s new risk-based update")
+
+https://www.androidauthority.com/android-risk-based-security-updates-3597466/
