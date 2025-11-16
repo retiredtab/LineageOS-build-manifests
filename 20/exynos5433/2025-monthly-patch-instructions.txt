@@ -16,23 +16,33 @@ cd build/core
 git stash --include-untracked
 croot
 
-# Install local monthly manifest changes
+cd packages/apps/Nfc
+git stash --include-untracked
+croot
+
 cd .repo/manifests
 git stash --include-untracked
 croot
 
+# Install local monthly manifest changes
+
 # Sync just android repo to get latest default.xml
 repo sync --force-sync android
 
+# add back our UL manifest
 cd .repo/manifests
-patch -p1 < ~/Downloads/20-ul/20-manifests-sept-2025.diff
+patch -p1 -R < ~/Downloads/20-ul/20-manifests-nov-2025.diff
 croot
 
 # espeak optional
 repo sync --force-sync ; espeak "sync done" ;
 
-# As of this writing, the Sept 5, 2025 patches were not yet merged via gerrit, so we pick them manually.
+# As of this writing on Nov 15, the Sept 5, 2025 patches are STILL not yet merged via gerrit, so we pick them manually.
 repopick -t T_asb_2025-09
+
+# There are no Oct 2025 patches.
+# There's one patch for Nov 2025.  Pick it manually since it's not yet merged as of Nov 15, 2025.
+repopick -t T_asb_2025-11
 
 # Now re-apply all our LineageOS-UL patches
 
