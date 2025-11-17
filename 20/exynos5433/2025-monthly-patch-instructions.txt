@@ -31,7 +31,7 @@ repo sync --force-sync android
 
 # add back our UL manifest
 cd .repo/manifests
-patch -p1 -R < ~/Downloads/20-ul/20-manifests-nov-2025.diff
+patch -p1 < ~/Downloads/20-ul/20-manifests-nov-2025.diff
 croot
 
 # espeak optional
