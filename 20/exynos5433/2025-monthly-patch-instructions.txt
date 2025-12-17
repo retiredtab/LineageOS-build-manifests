@@ -31,18 +31,22 @@ repo sync --force-sync android
 
 # add back our UL manifest
 cd .repo/manifests
-patch -p1 < ~/Downloads/20-ul/20-manifests-nov-2025.diff
+patch -p1 < ~/Downloads/20-ul/20-manifests-dec-2025.diff
 croot
 
 # espeak optional
 repo sync --force-sync ; espeak "sync done" ;
 
-# As of this writing on Nov 15, the Sept 5, 2025 patches are STILL not yet merged via gerrit, so we pick them manually.
+# As of this writing on Dec 17, the Sept 5, 2025 patches are STILL not yet merged via gerrit, so we pick them manually.
 repopick -t T_asb_2025-09
 
 # There are no Oct 2025 patches.
-# There's one patch for Nov 2025.  Pick it manually since it's not yet merged as of Nov 15, 2025.
+
+# There's one patch for Nov 2025.  Pick it manually since it's not yet merged as of Dec 17, 2025.
 repopick -t T_asb_2025-11
+
+# The Dec 5th, 2025 patches are not yet merged.
+repopick -t T_asb_2025-12
 
 # Now re-apply all our LineageOS-UL patches
 
