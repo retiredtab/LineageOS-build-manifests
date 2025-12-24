@@ -1,13 +1,13 @@
-As of Sept 2025.  Subject to change at any time.
+As of Jan 2026.  Subject to change at any time.
 
 Jan - 21.0
-Feb - 14.1, 16.0, 18.1
+Feb - 14.1, 18.1
 Mar - 22.2
 Apr - 21.0
 May - 20.0
 Jun - 22.2
 Jul - 21.0
-Aug - 14.1, 16.0, 18.1
+Aug - 14.1, 18.1
 Sep - 22.2
 Oct - 21.0
 Nov - 20.0
