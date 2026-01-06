@@ -70,19 +70,21 @@ croot
 repo sync --force-sync android
 cd .repo/manifests
 # put our changes to manifests
-patch -p1 < ~/Downloads/21-ul/sept-mani-2025.diff
+patch -p1 < ~/Downloads/21-ul/jan-mani-2026.diff
 croot
+
+# There are no security patches for Jan 2026 according to (cough *bullshit* cough)
+# https://source.android.com/docs/security/bulletin/2026/2026-01-01
+
+# Thus the security string will be Dec 1 2025.
 
 # espeak optional
 repo sync --force-sync ; espeak "sync done" ;
 
-# As of this writing, the Sept 1, 2025 patches were not yet merged via gerrit, so we pick them manually.
-repopick -t U_asb_2025-09
+# This patch is not merged as of Jan 5, 2026, but is part of the Dec 1, 2025 patches
+# 467461: dng_area_task: Provide backwards compatibility with legacy blobs | https://review.lineageos.org/c/LineageOS/android_external_dng_sdk/+/467461
 
-# Sept bump security string not yet on gerrit, so let's do it ourselves
-cd build/release
-patch -p1 < ~/Downloads/21-ul/sept-bump.diff
-croot
+repopick -f 467461
 
 [/code]
 
