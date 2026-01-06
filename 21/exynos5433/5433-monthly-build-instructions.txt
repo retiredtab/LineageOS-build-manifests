@@ -28,9 +28,6 @@ files to reflect the above.
 # stash all our changes so we get the latest repo update, then reapply patches later on
 # patches made via git am are automatically removed with repo sync --force-sync
 
-cd hardware/lineage/interfaces/
-git stash --include-untracked
-croot
 cd hardware/samsung/
 git stash --include-untracked
 croot
@@ -38,6 +35,9 @@ cd hardware/samsung_slsi/exynos/
 git stash --include-untracked
 croot
 cd hardware/samsung_slsi/exynos5433/
+git stash --include-untracked
+croot
+cd hardware/lineage/interfaces/
 git stash --include-untracked
 croot
 cd vendor/lineage
@@ -80,11 +80,6 @@ croot
 
 # espeak optional
 repo sync --force-sync ; espeak "sync done" ;
-
-# This patch is not merged as of Jan 5, 2026, but is part of the Dec 1, 2025 patches
-# 467461: dng_area_task: Provide backwards compatibility with legacy blobs | https://review.lineageos.org/c/LineageOS/android_external_dng_sdk/+/467461
-
-repopick -f 467461
 
 [/code]
 
