@@ -1,0 +1,92 @@
+# cd into your code directory
+
+cd code
+
+# Setup env
+. build/envsetup.sh
+
+# Get latest git binary
+cd .repo/repo/
+git pull
+croot
+
+# Stash our changes from last month
+
+cd build/core
+git stash --include-untracked
+croot
+
+cd frameworks/base
+git stash --include-untracked
+croot
+
+cd hardware/samsung_slsi/exynos
+git stash --include-untracked
+croot
+
+cd .repo/manifests
+git stash --include-untracked
+croot
+
+# Install local monthly manifest changes
+
+# Sync just android repo to get latest default.xml
+repo sync --force-sync android
+
+# add back our UL manifest
+cd .repo/manifests
+patch -p1 < ~/Downloads/20-ul/20-manifests-dec-2025.diff
+croot
+
+# espeak optional
+repo sync --force-sync ; espeak "sync done" ;
+
+# Now re-apply all our LineageOS-UL patches
+
+cd packages/modules/Bluetooth
+git am ~/Downloads/20-ul/packages_modules_Bluetooth-july-2024.patch
+croot
+
+cd frameworks/base
+git am ~/Downloads/20-ul/frameworks-base-june-2024.patch
+croot
+
+cd hardware/interfaces
+git am ~/Downloads/20-ul/hardware_interfaces_aug-2024.patch
+croot
+
+cd frameworks/av
+git am ~/Downloads/20-ul/frameworks_av-aug-2024.patch
+croot
+
+cd frameworks/native
+git am ~/Downloads/20-ul/frameworks_native_lineage-20.0-mar-2025.patch
+croot
+
+cd packages/modules/Wifi
+git am ~/Downloads/20-ul/packages_module_Wifi-nov-2024.patch
+croot
+
+cd packages/modules/Connectivity
+git am ~/Downloads/20-ul/packages_modules_Connectivity_lineage-20.0-june-2025.patch
+croot
+
+cd frameworks/opt/telephony
+git am ~/Downloads/20-ul/frameworks_opt_telephony_lineage-sept-2025.patch
+croot
+
+# Now apply all device specific patches
+
+# for samsung_slsi libfimg4x: Fix a -Wunreachable-code-loop-increment compilation error
+
+repopick -f 331661
+
+# Add patch to fix Newpipe memory leak
+cd hardware/samsung_slsi/exynos
+patch -p1 < ~/Downloads/feb-2026-memoryleak.patch
+croot
+
+# Rerun Setup env to pickup any environment changes
+. build/envsetup.sh
+
+# Breakfast and Brunch as usual.
