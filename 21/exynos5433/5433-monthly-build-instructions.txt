@@ -151,7 +151,7 @@ cd hardware/samsung/
 patch -p1 < ~/Downloads/5433-patches/hardware_samsung.diff
 croot
 cd hardware/samsung_slsi/exynos/
-patch -p1 < ~/Downloads/5433-patches/hardware_samsung_slsi_exynos.diff
+patch -p1 < ~/Downloads/5433-patches/hardware_samsung_slsi_exynos-jan-2026.diff
 croot
 cd hardware/samsung_slsi/exynos5433
 patch -p1 < ~/Downloads/5433-patches/hardware_samsung_slsi_exynos5433.diff
