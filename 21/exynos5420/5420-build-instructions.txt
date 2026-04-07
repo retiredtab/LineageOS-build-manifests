@@ -94,12 +94,12 @@ cd .repo/manifests
 patch -p1 < ~/Downloads/21-ul/jan-mani-2026.diff
 croot
 
-# There are no security patches for Jan 2026 according to (cough *bullshit* cough)
-# https://source.android.com/docs/security/bulletin/2026/2026-01-01
-
 5. sync everthing, espeak is optional
 
 repo sync --force-sync ; espeak done ;
+
+# The April 1, 2026 security patches aren't yet merged, so let's do it manually.
+repopick -t U_asb_2026-04
 
 6. Download the patches from
 
