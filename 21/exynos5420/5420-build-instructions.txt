@@ -98,9 +98,6 @@ croot
 
 repo sync --force-sync ; espeak done ;
 
-# The April 1, 2026 security patches aren't yet merged, so let's do it manually.
-repopick -t U_asb_2026-04
-
 6. Download the patches from
 
 https://github.com/retiredtab/LineageOS-build-manifests/tree/main/21/UL-patches-2024
