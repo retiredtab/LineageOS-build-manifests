@@ -77,7 +77,7 @@ croot
 
 # Manually bump security string to May 1, 2026.  Android 13 stopped getting "official" patches on March 2026.
 cd build
-patch -p1 ~/Downloads/20-ul/build_core_bump_string-may2026.diff
+patch -p1 < ~/Downloads/20-ul/build_core_bump_string-may2026.diff
 croot
 
 # Now apply all device specific patches
