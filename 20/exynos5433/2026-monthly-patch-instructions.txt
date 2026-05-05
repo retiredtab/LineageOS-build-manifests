@@ -35,7 +35,7 @@ repo sync --force-sync android
 
 # add back our UL manifest
 cd .repo/manifests
-patch -p1 < ~/Downloads/20-ul/20-manifests-dec-2025.diff
+patch -p1 < ~/Downloads/20-ul/20-manifests-may-2026.diff
 croot
 
 # espeak optional
@@ -73,6 +73,11 @@ croot
 
 cd frameworks/opt/telephony
 git am ~/Downloads/20-ul/frameworks_opt_telephony_lineage-sept-2025.patch
+croot
+
+# Manually bump security string to May 1, 2026.  Android 13 stopped getting "official" patches on March 2026.
+cd build
+patch -p1 ~/Downloads/20-ul/build_core_bump_string-may2026.diff
 croot
 
 # Now apply all device specific patches
