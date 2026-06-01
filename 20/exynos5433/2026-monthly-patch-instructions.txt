@@ -35,11 +35,14 @@ repo sync --force-sync android
 
 # add back our UL manifest
 cd .repo/manifests
-patch -p1 < ~/Downloads/20-ul/20-manifests-may-2026.diff
+patch -p1 < ~/Downloads/20-ul/20-manifests-june-2026.diff
 croot
 
 # espeak optional
 repo sync --force-sync ; espeak "sync done" ;
+
+# The June 2026 security patches have not yet been merged as of June 1, so let's pick them manually.
+repopick -t T_asb_2026-06
 
 # Now re-apply all our LineageOS-UL patches
 
@@ -49,6 +52,7 @@ croot
 
 cd frameworks/base
 git am ~/Downloads/20-ul/frameworks-base-june-2024.patch
+patch -p1 < ~/Downloads/20-ul/frameworks_base-los20-kill-browserzygote-may31-2026.diff
 croot
 
 cd hardware/interfaces
@@ -75,9 +79,9 @@ cd frameworks/opt/telephony
 git am ~/Downloads/20-ul/frameworks_opt_telephony_lineage-sept-2025.patch
 croot
 
-# Manually bump security string to May 1, 2026.  Android 13 stopped getting "official" patches on March 2026.
+# Manually bump security string to June 1, 2026.  Android 13 stopped getting "official" patches on March 2026.
 cd build
-patch -p1 < ~/Downloads/20-ul/build_core_bump_string-may2026.diff
+patch -p1 < ~/Downloads/20-ul/build_core_bump_string-june2026.diff
 croot
 
 # Now apply all device specific patches
