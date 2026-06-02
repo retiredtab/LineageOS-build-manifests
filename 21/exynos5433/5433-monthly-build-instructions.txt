@@ -55,6 +55,9 @@ croot
 cd packages/modules/Connectivity
 git stash --include-untracked
 croot
+cd frameworks/base
+git stash --include-untracked
+croot
 
 [/code]
 
@@ -70,14 +73,14 @@ croot
 repo sync --force-sync android
 cd .repo/manifests
 # put our changes to manifests
-patch -p1 < ~/Downloads/21-ul/apr-mani-2026.diff
+patch -p1 < ~/Downloads/21-ul/june-mani-2026.diff
 croot
 
 # espeak optional
 repo sync --force-sync ; espeak "sync done" ;
 
-# The April 1, 2026 security patches aren't yet merged, so let's do it manually.
-repopick -t U_asb_2026-04
+# The June 1, 2026 security patches aren't yet merged as of June 1, so let's do it manually.
+repopick -t U_asb_2026-06
 
 [/code]
 
@@ -104,6 +107,7 @@ croot
 
 cd frameworks/base
 git am ~/Downloads/21-ul/frameworks-base-aug-2024.patch
+patch -p1 < ~/Downloads/21-ul/frameworks_base-los21-kill-browserzygote-may31-2026.diff
 croot
 
 cd frameworks/native
