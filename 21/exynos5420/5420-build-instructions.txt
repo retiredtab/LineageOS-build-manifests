@@ -82,6 +82,9 @@ croot
 cd device/samsung/universal5420-common
 git stash --include-untracked
 croot
+cd frameworks/base
+git stash --include-untracked
+croot
 
 cd .repo/manifests
 # stash any changes from last time and use the new mainfest patch file
@@ -91,12 +94,18 @@ croot
 repo sync --force-sync android
 cd .repo/manifests
 # put our changes to manifests
-patch -p1 < ~/Downloads/21-ul/apr-mani-2026.diff
+patch -p1 < ~/Downloads/21-ul/june-mani-2026.diff
 croot
 
 5. sync everthing, espeak is optional
 
 repo sync --force-sync ; espeak done ;
+
+# rerun . build/envsetup.sh
+. build/envsetup.sh
+
+# The July 1, 2026 security patches aren't yet merged as of July 6, so let's do it manually.
+repopick -t U_asb_2026-07
 
 6. Download the patches from
 
@@ -120,6 +129,7 @@ croot
 
 cd frameworks/base
 git am ~/Downloads/21-ul/frameworks-base-aug-2024.patch
+patch -p1 < ~/Downloads/21-ul/frameworks_base-los21-kill-browserzygote-may31-2026.diff
 croot
 
 cd frameworks/native
