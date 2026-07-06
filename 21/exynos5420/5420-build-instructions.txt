@@ -184,6 +184,10 @@ croot
 # Download the patches from
 https://github.com/retiredtab/LineageOS-build-manifests/tree/main/21/exynos5420
 
+cd frameworks/base
+patch -p1 < ~/Downloads/5420-patches/nozfold.diff
+croot
+
 cd frameworks/av
 patch -p1 < ~/Downloads/5420-patches/5420-frameworks-av-omx-codecs.diff
 croot
@@ -206,6 +210,7 @@ croot
 
 cd device/samsung/universal5420-common
 patch -p1 < ~/Downloads/5420-patches/remove-inprocess-june-2025.diff
+patch -p1 < ~/Downloads/5420-patches/libshim_supercell.diff
 croot
 
 # repopick to fix compiler errors for 5420
