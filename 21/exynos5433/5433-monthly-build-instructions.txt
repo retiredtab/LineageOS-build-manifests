@@ -79,8 +79,11 @@ croot
 # espeak optional
 repo sync --force-sync ; espeak "sync done" ;
 
-# The June 1, 2026 security patches aren't yet merged as of June 1, so let's do it manually.
-repopick -t U_asb_2026-06
+# rerun . build/envsetup.sh
+. build/envsetup.sh
+
+# The July 1, 2026 security patches aren't yet merged as of July 6, so let's do it manually.
+repopick -t U_asb_2026-07
 
 [/code]
 
