@@ -185,7 +185,7 @@ croot
 https://github.com/retiredtab/LineageOS-build-manifests/tree/main/21/exynos5420
 
 cd frameworks/base
-patch -p1 < ~/Downloads/5420-patches/nozfold.diff
+patch -p1 < ~/Downloads/5420-patches/los21-july-2026nozfold.diff
 croot
 
 cd frameworks/av
