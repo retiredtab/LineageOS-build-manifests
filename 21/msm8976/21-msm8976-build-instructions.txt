@@ -63,6 +63,9 @@ croot
 cd hardware/lineage/interfaces/
 git stash --include-untracked
 croot
+cd frameworks/base
+git stash --include-untracked
+croot
 
 # stash any changes from last time and use the latest manifest patch file
 
@@ -139,7 +142,7 @@ cd hardware/qcom-caf/wlan
 patch -p1 < ~/Downloads/msm8976-patches/hardware_qcom-caf_wlan.diff
 croot
 cd kernel/samsung/msm8976
-patch -p1 < ~/Downloads/msm8976-patches/kernel-jan-2025.diff
+patch -p1 < ~/Downloads/msm8976-patches/msm8976-kernel-july7-CVE-2026-43499-2026.diff
 croot
 cd system/apex
 patch -p1 < ~/Downloads/msm8976-patches/system_apex.diff
