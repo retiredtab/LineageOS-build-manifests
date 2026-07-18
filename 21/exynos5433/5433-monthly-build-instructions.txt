@@ -58,6 +58,10 @@ croot
 cd frameworks/base
 git stash --include-untracked
 croot
+cd device/samsung/gts2-common
+git stash --include-untracked
+croot
+
 
 [/code]
 
@@ -160,6 +164,10 @@ patch -p1 < ~/Downloads/5433-patches/hardware_samsung_slsi_exynos-jan-2026.diff
 croot
 cd hardware/samsung_slsi/exynos5433
 patch -p1 < ~/Downloads/5433-patches/hardware_samsung_slsi_exynos5433.diff
+croot
+
+cd device/samsung/gts2-common
+patch -p1 < ~/Downloads/5433-patches/deep-sleep-july2026.diff
 croot
 
 [/code]
