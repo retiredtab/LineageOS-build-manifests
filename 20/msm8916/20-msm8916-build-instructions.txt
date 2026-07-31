@@ -80,6 +80,7 @@ croot
 
 cd frameworks/base
 git am ~/Downloads/20-ul/frameworks-base-june-2024.patch
+patch -p1 < ~/Downloads/20-ul/frameworks_base-los20-kill-browserzygote-may31-2026.diff
 croot
 
 cd hardware/interfaces
