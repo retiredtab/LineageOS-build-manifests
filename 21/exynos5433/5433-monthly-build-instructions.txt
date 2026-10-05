@@ -77,7 +77,7 @@ croot
 repo sync --force-sync android
 cd .repo/manifests
 # put our changes to manifests
-patch -p1 < ~/Downloads/21-ul/june-mani-2026.diff
+patch -p1 < ~/Downloads/21-ul/oct-mani-2026.diff
 croot
 
 # espeak optional
@@ -86,8 +86,8 @@ repo sync --force-sync ; espeak "sync done" ;
 # rerun . build/envsetup.sh
 . build/envsetup.sh
 
-# The July 1, 2026 security patches aren't yet merged as of July 6, so let's do it manually.
-repopick -t U_asb_2026-07
+# The Oct 1, 2026 security patches aren't yet merged as of Oct 5, so let's do it manually.
+repopick -t U_asb_2026-10
 
 [/code]
 
