@@ -86,8 +86,8 @@ repo sync --force-sync ; espeak "sync done" ;
 # rerun . build/envsetup.sh
 . build/envsetup.sh
 
-# The Oct 1, 2026 security patches aren't yet merged as of Oct 5, so let's do it manually.
-repopick -t U_asb_2026-10
+# The Oct 1, 2026 security patches are merged as of Oct 6, so ignore the repopick below.
+# repopick -t U_asb_2026-10
 
 [/code]
 
