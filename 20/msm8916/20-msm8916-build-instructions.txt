@@ -42,6 +42,10 @@ cd packages/modules/Wifi
 git stash --include-untracked
 croot
 
+cd build/core
+git stash --include-untracked
+croot
+
 # stash device specific changes from last month
 
 cd hardware/qcom-caf/wlan
@@ -93,6 +97,11 @@ croot
 
 cd packages/modules/Wifi
 git am ~/Downloads/20-ul/packages_module_Wifi-nov-2024.patch
+croot
+
+cd build/core
+patch -p1 < ~/Downloads/20-ul/build_core_bump_string-nov2026.diff
+patch -p1 < ~/Downloads/20-ul/buld_core_nov2026.diff
 croot
 
 #### Device specific patches ####
