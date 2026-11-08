@@ -41,7 +41,7 @@ croot
 # espeak optional
 repo sync --force-sync ; espeak "sync done" ;
 
-# The Nov 2026 security patches have not yet been merged as of Nov 1, so let's pick them manually.
+# The Nov 2026 security patches have not yet been merged as of Nov 8, so let's pick them manually.
 repopick -t T_asb_2026-11
 
 # Now re-apply all our LineageOS-UL patches
